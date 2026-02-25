@@ -243,7 +243,7 @@ options:[
 title:"The Last Descent ⚖️",
 text:"It offers no choices. Only a mirror. Everyone sees what they’ve become.",
 options:[
-{label:"Accept Judgment",tag:"Judgment",effect:"Convert all unused boons into power. Convert ignored consequences into enemies. Lock campaign into final arc."}
+{label:"Accept Judgment",tag:"Judgment",effect:"Faction with the highest setup suffers for being the most greedy. This Faction has 2 units sent to the Graveyard, other factions gain +5 Metal."}
 ]
 },
 
@@ -251,7 +251,7 @@ options:[
 title:"The Forgotten Contract",
 text:"The stone remembers promises—even unspoken ones.",
 options:[
-{label:"Bind Yourselves",tag:"Oath",effect:"Once per campaign all factions ignore hostility. Presence cannot be reduced for 2 rounds."},
+{label:"Bind Yourselves",tag:"Oath",effect:"Once per campaign all factions can agree not to raise Presence for one effect."},
 {label:"Refuse",tag:"Oath Broken",effect:"Each faction gains 2 Rare rewards. Table-wide distrust penalties apply."}
 ]
 },
@@ -410,6 +410,75 @@ effect:"All factions skip 1 round of actions. No spawns occur this Round."
 label:"Press On",
 tag:"Defiance",
 effect:"All units ignore terrain penalties this Round. Spawn Stormward Avatar at the map centre."
+}
+]
+},
+{
+title:"Oaths Are Tested",
+text:"Words spoken in iron are tested by fire.",
+options:[
+{
+label:"Resolve the Oaths",
+tag:"Trial",
+effect:"Each faction chooses Honour the Oath (Lose 5 Gold) or Exploit the Moment (Gain +10 Gold). For each faction that Exploits, the Oathbound faction gains +5 Food and spawn Oathbreaker Behemoth near the Centre."
+}
+]
+},
+
+{
+title:"The Ground Trembles",
+text:"Rumbles erupt from below and ripple across the realm, threatening ruin but promising fortune.",
+options:[
+{
+label:"Stabilize the Fault Lines",
+tag:"Stability",
+effect:"The table pays 15 Metal split among all factions as they choose. All factions gain +15 Food each."
+},
+{
+label:"Feed the Rupture",
+tag:"Cataclysm",
+effect:"The fault opens near the most central POI. Spawn a World Boss. The faction with the most Dragon Coins gains +2 Dragon Coins. If the table fails to agree within 60 seconds, this option triggers automatically."
+}
+]
+},
+
+{
+title:"The Council of Shades",
+text:"An assembly of ancient spirits demands tribute — or will punish all for silence.",
+options:[
+{
+label:"Resolve the Council",
+tag:"Judgment",
+effect:"Each faction secretly chooses Tribute or Defiance. Tribute: Lose 10 Gold and gain either +5 Metal, +5 Food, or 1 Relic. Defiance: No immediate loss. If more Tributes than Defiance, all factions gain +10 Gold. If more Defiance than Tribute, spawn a keyword-targeting creature against the faction with the most keywords. If tied, all factions lose 5 Gold and no spawn."
+}
+]
+},
+
+{
+title:"The Broken Celestial Clock",
+text:"A cosmic mechanism fractures, twisting time in unpredictable ways.",
+options:[
+{
+label:"Resolve the Fracture",
+tag:"Temporal Distortion",
+effect:"Each faction chooses Anchor Time (Skip one Movement action in a Round and gain 1 Random Potion) or Bend Time (Take an extra Attack Action next Phase and lose 10 Food). After choices are revealed, any faction that chose Bend Time spawns a random Creature."
+}
+]
+},
+
+{
+title:"The Blood Moon Ascends",
+text:"The red moon rises and the dead answer its call.",
+options:[
+{
+label:"United Circle",
+tag:"Unity",
+effect:"All factions contribute 5 Food. All current world threats are banished and all factions gain 1 Relic."
+},
+{
+label:"Reckless Stand",
+tag:"Blood Omen",
+effect:"All factions gain +20 Gold but must fight a Table Beast. A powerful world threat spawns that targets actions."
 }
 ]
 }
