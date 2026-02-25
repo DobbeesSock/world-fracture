@@ -32,14 +32,53 @@ button, select {
     color:#e6d3a3;
 }
 
-#tensionRow { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
-.tensionBox { width:20px; height:20px; border-radius:4px; }
+#tensionRow {
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+    justify-content:center;
+}
 
-#weGrid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
-.weSlot { height:35px; background:#222; border-radius:4px; }
+.tensionBox {
+    width:20px;
+    height:20px;
+    border-radius:4px;
+}
 
-#presenceBar { height:12px; background:#333; border-radius:5px; overflow:hidden; }
-#presenceFill { height:100%; width:0%; transition:.3s; }
+#weGrid {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+
+.weSlot {
+    height:35px;
+    background:#222;
+    border-radius:4px;
+}
+
+#presenceBar {
+    height:12px;
+    background:#333;
+    border-radius:5px;
+    overflow:hidden;
+}
+
+#presenceFill {
+    height:100%;
+    width:0%;
+    transition:.3s;
+}
+
+#logContainer {
+    max-height:200px;
+    overflow-y:auto;
+    background:#111;
+    padding:10px;
+    border-radius:6px;
+    text-align:left;
+    font-size:0.9em;
+}
 </style>
 </head>
 <body>
@@ -72,16 +111,29 @@ button, select {
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
 <div id="presenceBar"><div id="presenceFill"></div></div>
+<div>Tier: <span id="presenceTier">0–2</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
 <button onclick="resetPresence()">Reset</button>
 </div>
 
+<div class="section">
+<h2>Cave Log</h2>
+<div id="logContainer"></div>
+<button onclick="clearLog()">Clear Log</button>
+</div>
+
 <script>
-let tension=0, weCount=0, tensionSinceLastWE=0, presence=0;
+let tension=0;
+let weCount=0;
+let tensionSinceLastWE=0;
+let presence=0;
+let logEntries=[];
 
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
+
+/* ---------- RULES ---------- */
 
 function getThreshold(){
  if(weCount<5)return 4;
@@ -98,8 +150,48 @@ function getTensionColor(){
  return "#8b0000";
 }
 
+function getPresenceTier(){
+ if(presence>=13)return "13–15+";
+ if(presence>=11)return "11–12";
+ if(presence>=9)return "9–10";
+ if(presence>=7)return "7–8";
+ if(presence>=5)return "5–6";
+ if(presence>=3)return "3–4";
+ return "0–2";
+}
+
+/* ---------- LOG ---------- */
+
+function addLog(message){
+ let time=new Date().toLocaleTimeString();
+ let entry="["+time+"] "+message;
+ logEntries.unshift(entry);
+ if(logEntries.length>100)logEntries.pop();
+ renderLog();
+}
+
+function renderLog(){
+ let container=document.getElementById("logContainer");
+ container.innerHTML="";
+ logEntries.forEach(e=>{
+   let div=document.createElement("div");
+   div.textContent=e;
+   container.appendChild(div);
+ });
+}
+
+function clearLog(){
+ logEntries=[];
+ renderLog();
+}
+
+/* ---------- TENSION ---------- */
+
 function increaseTension(){
- tension++; tensionSinceLastWE++;
+ tension++;
+ tensionSinceLastWE++;
+ addLog("Tension increased to "+tension+".");
+
  let color=getTensionColor();
  let box=document.createElement("div");
  box.className="tensionBox";
@@ -107,49 +199,82 @@ function increaseTension(){
  tensionRow.appendChild(box);
 
  if(tensionSinceLastWE>=getThreshold()){
-   let slot=document.createElement("div");
-   slot.className="weSlot";
-   slot.style.background=color;
-   weGrid.appendChild(slot);
-   weCount++;
+   triggerWE(color);
    tensionSinceLastWE=0;
  }
+
+ updateUI();
+}
+
+function triggerWE(color){
+ let slot=document.createElement("div");
+ slot.className="weSlot";
+ slot.style.background=color;
+ weGrid.appendChild(slot);
+
+ weCount++;
+ addLog("World Event triggered. Total WE: "+weCount+".");
+
  updateUI();
 }
 
 function decreaseTension(){
  if(tension<=0)return;
- tension--; tensionSinceLastWE--;
+ tension--;
+ tensionSinceLastWE--;
  tensionRow.removeChild(tensionRow.lastChild);
+ addLog("Tension decreased to "+tension+".");
  updateUI();
 }
 
 function resetTension(){
- tension=0; weCount=0; tensionSinceLastWE=0;
- tensionRow.innerHTML=""; weGrid.innerHTML="";
+ tension=0;
+ weCount=0;
+ tensionSinceLastWE=0;
+ tensionRow.innerHTML="";
+ weGrid.innerHTML="";
+ addLog("Tension reset.");
  updateUI();
 }
+
+/* ---------- PRESENCE ---------- */
 
 function changePresence(v){
- presence+=v; if(presence<0)presence=0;
+ presence+=v;
+ if(presence<0)presence=0;
+
+ if(v>0) addLog("Presence increased to "+presence+".");
+ else addLog("Presence decreased to "+presence+".");
+
  updateUI();
 }
 
-function resetPresence(){ presence=0; updateUI(); }
+function resetPresence(){
+ presence=0;
+ addLog("Presence reset.");
+ updateUI();
+}
+
+/* ---------- UI ---------- */
 
 function updateUI(){
  document.getElementById("tensionValue").innerText=tension;
  document.getElementById("weCount").innerText=weCount;
  document.getElementById("presenceValue").innerText=presence;
+ document.getElementById("presenceTier").innerText=getPresenceTier();
+
  let fill=document.getElementById("presenceFill");
  fill.style.width=Math.min(presence*6,100)+"%";
- fill.style.background=presence>12?"darkred":"gold";
+ fill.style.background=presence>=13?"darkred":"gold";
 }
 
-/* SAVE SYSTEM */
+/* ---------- SAVE SYSTEM ---------- */
+
 function saveCampaign(){
  let slot=document.getElementById("saveSlot").value;
- localStorage.setItem(slot,JSON.stringify({tension,weCount,tensionSinceLastWE,presence}));
+ localStorage.setItem(slot,JSON.stringify({
+   tension,weCount,tensionSinceLastWE,presence,logEntries
+ }));
  alert("Saved to "+slot);
 }
 
@@ -157,33 +282,42 @@ function loadCampaign(){
  let slot=document.getElementById("saveSlot").value;
  let data=localStorage.getItem(slot);
  if(!data){ alert("No save found."); return; }
+
  let state=JSON.parse(data);
  tension=state.tension;
  weCount=state.weCount;
  tensionSinceLastWE=state.tensionSinceLastWE;
  presence=state.presence;
+ logEntries=state.logEntries||[];
 
  tensionRow.innerHTML="";
  weGrid.innerHTML="";
+
  for(let i=0;i<tension;i++){
    let box=document.createElement("div");
    box.className="tensionBox";
    box.style.background=getTensionColor();
    tensionRow.appendChild(box);
  }
+
  for(let i=0;i<weCount;i++){
    let slot=document.createElement("div");
    slot.className="weSlot";
    slot.style.background=getTensionColor();
    weGrid.appendChild(slot);
  }
+
+ renderLog();
  updateUI();
 }
 
-/* PWA REGISTER */
+/* ---------- PWA ---------- */
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register('sw.js');
 }
+
+updateUI();
+renderLog();
 </script>
 
 </body>
