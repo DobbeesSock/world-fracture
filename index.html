@@ -186,10 +186,41 @@ const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
 const saveSlotSelect=document.getElementById("saveSlot");
 
-/* ---------- ACT I EVENTS ---------- */
+/* ================= ACT I EVENTS ================= */
 
 const worldEventPools={
 act1:[
+
+{
+title:"The World Anchor ⚖️",
+text:"A titanic spike of stone plunges endlessly downward. Runes from every culture spiral around it. This is holding something still.",
+options:[
+{label:"Reinforce the Anchor",tag:"Order"},
+{label:"Damage the Anchor",tag:"Profit"},
+{label:"Remove the Anchor",tag:"Freedom"}
+]
+},
+
+{
+title:"The Shared Grave ⚖️",
+text:"Every faction’s banners hang here—old, tattered, impossible. This place remembers wars that haven’t happened yet.",
+options:[
+{label:"Honor the Dead",tag:"Reverence"},
+{label:"Loot the Graves",tag:"Desecration"},
+{label:"Burn the Banners",tag:"Defiance"}
+]
+},
+
+{
+title:"The Silent Contract ⚖️",
+text:"A stone table. No writing. Just space for signatures.",
+options:[
+{label:"Sign Together",tag:"Alliance"},
+{label:"Refuse",tag:"Independence"},
+{label:"One Faction Signs Alone",tag:"Betrayal"}
+]
+},
+
 {
 title:"The Hunger Beneath Empires ⚖️",
 text:"The ground pulses across the entire map. This thing feeds on excess.",
@@ -233,55 +264,23 @@ options:[
 {label:"Honor the Fallen",tag:"Remembrance"},
 {label:"Loot the Dead",tag:"Profiteering"}
 ]
-},
-title:"The World Anchor ⚖️",
-text:"A titanic spike of stone plunges endlessly downward. Runes from every culture spiral around it. This is holding something still.",
-options:[
-{label:"Reinforce the Anchor",tag:"Order"},
-{label:"Damage the Anchor",tag:"Profit"},
-{label:"Remove the Anchor",tag:"Freedom"}
-]
-},
-{
-title:"The Shared Grave ⚖️",
-text:"Every faction’s banners hang here—old, tattered, impossible. This place remembers wars that haven’t happened yet.",
-options:[
-{label:"Honor the Dead",tag:"Reverence"},
-{label:"Loot the Graves",tag:"Desecration"},
-{label:"Burn the Banners",tag:"Defiance"}
-]
-},
-{
-title:"The Silent Contract ⚖️",
-text:"A stone table. No writing. Just space for signatures.",
-options:[
-{label:"Sign Together",tag:"Alliance"},
-{label:"Refuse",tag:"Independence"},
-{label:"One Faction Signs Alone",tag:"Betrayal"}
-]
-},
+}
 
 ]
 };
 
-/* ---------- ATMOSPHERE ---------- */
+/* ---------- REST OF ENGINE UNCHANGED ---------- */
 
 function updateAtmosphere(){
 let intensity=weCount*0.02;
 if(intensity>0.4)intensity=0.4;
-
 document.body.style.background=
-`radial-gradient(circle at center,
-rgba(80,0,0,${intensity}) 0%,
-#111 70%)`;
-
+`radial-gradient(circle at center,rgba(80,0,0,${intensity}) 0%,#111 70%)`;
 if(weCount>=15){
 document.body.style.filter=
 `brightness(${1-intensity}) contrast(${1+intensity})`;
 }
 }
-
-/* ---------- LOG ---------- */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
@@ -301,8 +300,6 @@ c.appendChild(d);
 }
 
 function clearLog(){logEntries=[];renderLog();}
-
-/* ---------- WORLD EVENTS ---------- */
 
 function drawWorldEvent(){
 let pool=worldEventPools.act1;
@@ -334,8 +331,6 @@ addLog(title+" — "+tag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* ---------- RULES ---------- */
-
 function getThreshold(){if(weCount<5)return 4;if(weCount<10)return 3;return 2;}
 function getTensionColor(){
 if(tension<10)return"#1abc9c";
@@ -355,12 +350,9 @@ if(presence>=3)return"3–4";
 return"0–2";
 }
 
-/* ---------- TENSION ---------- */
-
 function increaseTension(){
 tension++;tensionSinceLastWE++;
 addLog("Tension increased to "+tension+".");
-
 let color=getTensionColor();
 let box=document.createElement("div");
 box.className="tensionBox";
@@ -373,9 +365,7 @@ slot.className="weSlot wePulse";
 if(weCount>=10)slot.classList.add("weHigh");
 slot.style.background=color;
 weGrid.appendChild(slot);
-
-weCount++;
-tensionSinceLastWE=0;
+weCount++;tensionSinceLastWE=0;
 addLog("World Event triggered.");
 drawWorldEvent();
 }
@@ -402,8 +392,6 @@ updateUI();
 updateAtmosphere();
 }
 
-/* ---------- PRESENCE ---------- */
-
 function changePresence(v){
 presence+=v;if(presence<0)presence=0;
 addLog("Presence adjusted to "+presence+".");
@@ -414,8 +402,6 @@ function resetPresence(){
 presence=0;addLog("Presence reset.");updateUI();
 }
 
-/* ---------- UI ---------- */
-
 function updateUI(){
 document.getElementById("tensionValue").innerText=tension;
 document.getElementById("weCount").innerText=weCount;
@@ -425,8 +411,6 @@ let fill=document.getElementById("presenceFill");
 fill.style.width=Math.min(presence*6,100)+"%";
 fill.style.background=presence>=13?"darkred":"gold";
 }
-
-/* ---------- CAMPAIGN ---------- */
 
 function initSlots(){
 saveSlotSelect.innerHTML="";
@@ -454,15 +438,12 @@ let slot=saveSlotSelect.value;
 let data=localStorage.getItem(slot);
 if(!data){alert("No save found.");return;}
 let state=JSON.parse(data);
-tension=state.tension;
-weCount=state.weCount;
+tension=state.tension;weCount=state.weCount;
 tensionSinceLastWE=state.tensionSinceLastWE;
 presence=state.presence;
 logEntries=state.logEntries||[];
 usedEvents=state.usedEvents||[];
-
-tensionRow.innerHTML="";
-weGrid.innerHTML="";
+tensionRow.innerHTML="";weGrid.innerHTML="";
 for(let i=0;i<tension;i++){
 let box=document.createElement("div");
 box.className="tensionBox";
@@ -475,13 +456,10 @@ slot.className="weSlot";
 slot.style.background=getTensionColor();
 weGrid.appendChild(slot);
 }
-
 renderLog();
 updateUI();
 updateAtmosphere();
 }
-
-/* ---------- INIT ---------- */
 
 let storedNames=localStorage.getItem("campaignNames");
 if(storedNames)campaignNames=JSON.parse(storedNames);
