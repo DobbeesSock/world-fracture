@@ -6,14 +6,17 @@
 <title>World Fracture</title>
 
 <link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 body{
     margin:0;
-    font-family:Segoe UI, sans-serif;
+    font-family:'Cinzel', serif;
+    letter-spacing:0.5px;
     background:#111;
     color:#e6d3a3;
     text-align:center;
+    transition: background 1s ease, filter 1s ease;
 }
 
 .section{
@@ -63,6 +66,10 @@ button, select, input{
     animation:pulse 0.6s ease;
 }
 
+.weHigh{
+    box-shadow:0 0 10px rgba(255,0,0,0.7);
+}
+
 @keyframes pulse{
     0%{transform:scale(1);}
     50%{transform:scale(1.15);}
@@ -92,11 +99,10 @@ button, select, input{
     font-size:0.9em;
 }
 
-/* Modal */
 .modal{
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,0.85);
+    background:rgba(0,0,0,0.9);
     display:none;
     align-items:center;
     justify-content:center;
@@ -110,10 +116,6 @@ button, select, input{
     width:90%;
     max-width:500px;
     text-align:left;
-}
-
-.modal h2{
-    margin-top:0;
 }
 
 .optionBtn{
@@ -167,7 +169,6 @@ button, select, input{
 <button onclick="clearLog()">Clear Log</button>
 </div>
 
-<!-- World Event Modal -->
 <div class="modal" id="eventModal">
 <div class="modal-content">
 <h2 id="eventTitle"></h2>
@@ -177,31 +178,15 @@ button, select, input{
 </div>
 
 <script>
-/* =======================
-   STATE
-======================= */
-
-let tension=0;
-let weCount=0;
-let tensionSinceLastWE=0;
-let presence=0;
-let logEntries=[];
-let usedEvents=[];
-
-let campaignNames={
-    slot1:"Campaign Slot 1",
-    slot2:"Campaign Slot 2",
-    slot3:"Campaign Slot 3"
-};
-
+let tension=0,weCount=0,tensionSinceLastWE=0,presence=0;
+let logEntries=[],usedEvents=[];
+let campaignNames={slot1:"Campaign Slot 1",slot2:"Campaign Slot 2",slot3:"Campaign Slot 3"};
 const slots=["slot1","slot2","slot3"];
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
 const saveSlotSelect=document.getElementById("saveSlot");
 
-/* =======================
-   ACT I WORLD EVENTS
-======================= */
+/* ---------- ACT I EVENTS ---------- */
 
 const worldEventPools={
 act1:[
@@ -209,46 +194,59 @@ act1:[
 title:"The World Anchor ⚖️",
 text:"A titanic spike of stone plunges endlessly downward. Runes from every culture spiral around it. This is holding something still.",
 options:[
-{label:"Reinforce the Anchor", tag:"Order"},
-{label:"Damage the Anchor", tag:"Profit"},
-{label:"Remove the Anchor", tag:"Freedom"}
+{label:"Reinforce the Anchor",tag:"Order"},
+{label:"Damage the Anchor",tag:"Profit"},
+{label:"Remove the Anchor",tag:"Freedom"}
 ]
 },
 {
 title:"The Shared Grave ⚖️",
 text:"Every faction’s banners hang here—old, tattered, impossible. This place remembers wars that haven’t happened yet.",
 options:[
-{label:"Honor the Dead", tag:"Reverence"},
-{label:"Loot the Graves", tag:"Desecration"},
-{label:"Burn the Banners", tag:"Defiance"}
+{label:"Honor the Dead",tag:"Reverence"},
+{label:"Loot the Graves",tag:"Desecration"},
+{label:"Burn the Banners",tag:"Defiance"}
 ]
 },
 {
 title:"The Silent Contract ⚖️",
 text:"A stone table. No writing. Just space for signatures.",
 options:[
-{label:"Sign Together", tag:"Alliance"},
-{label:"Refuse", tag:"Independence"},
-{label:"One Faction Signs Alone", tag:"Betrayal"}
+{label:"Sign Together",tag:"Alliance"},
+{label:"Refuse",tag:"Independence"},
+{label:"One Faction Signs Alone",tag:"Betrayal"}
 ]
 },
-
-// ---- 42 PLACEHOLDERS ----
 ...Array.from({length:42},(_,i)=>({
 title:"Act I Event Placeholder "+(i+4),
 text:"Replace this placeholder with a real World Event.",
 options:[
-{label:"Option A", tag:"Path A"},
-{label:"Option B", tag:"Path B"},
-{label:"Option C", tag:"Path C"}
+{label:"Option A",tag:"Path A"},
+{label:"Option B",tag:"Path B"},
+{label:"Option C",tag:"Path C"}
 ]
 }))
 ]
 };
 
-/* =======================
-   LOG
-======================= */
+/* ---------- ATMOSPHERE ---------- */
+
+function updateAtmosphere(){
+let intensity=weCount*0.02;
+if(intensity>0.4)intensity=0.4;
+
+document.body.style.background=
+`radial-gradient(circle at center,
+rgba(80,0,0,${intensity}) 0%,
+#111 70%)`;
+
+if(weCount>=15){
+document.body.style.filter=
+`brightness(${1-intensity}) contrast(${1+intensity})`;
+}
+}
+
+/* ---------- LOG ---------- */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
@@ -258,84 +256,41 @@ renderLog();
 }
 
 function renderLog(){
-let container=document.getElementById("logContainer");
-container.innerHTML="";
+let c=document.getElementById("logContainer");
+c.innerHTML="";
 logEntries.forEach(e=>{
-let div=document.createElement("div");
-div.textContent=e;
-container.appendChild(div);
+let d=document.createElement("div");
+d.textContent=e;
+c.appendChild(d);
 });
 }
 
-function clearLog(){ logEntries=[]; renderLog(); }
+function clearLog(){logEntries=[];renderLog();}
 
-/* =======================
-   RULES
-======================= */
-
-function getThreshold(){
-if(weCount<5)return 4;
-if(weCount<10)return 3;
-return 2;
-}
-
-function getTensionColor(){
-if(tension<10)return "#1abc9c";
-if(tension<20)return "#2ecc71";
-if(tension<30)return "#f1c40f";
-if(tension<40)return "#e67e22";
-if(tension<60)return "#e74c3c";
-return "#8b0000";
-}
-
-function getPresenceTier(){
-if(presence>=13)return "13–15+";
-if(presence>=11)return "11–12";
-if(presence>=9)return "9–10";
-if(presence>=7)return "7–8";
-if(presence>=5)return "5–6";
-if(presence>=3)return "3–4";
-return "0–2";
-}
-
-/* =======================
-   WORLD EVENT ENGINE
-======================= */
+/* ---------- WORLD EVENTS ---------- */
 
 function drawWorldEvent(){
-
 let pool=worldEventPools.act1;
-
-if(usedEvents.length===pool.length){
-usedEvents=[];
-}
-
-let available=pool.filter((_,index)=>!usedEvents.includes(index));
-let randomIndex=Math.floor(Math.random()*available.length);
-let eventIndex=pool.indexOf(available[randomIndex]);
-
+if(usedEvents.length===pool.length)usedEvents=[];
+let available=pool.filter((_,i)=>!usedEvents.includes(i));
+let index=Math.floor(Math.random()*available.length);
+let eventIndex=pool.indexOf(available[index]);
 usedEvents.push(eventIndex);
-
 openEventModal(pool[eventIndex]);
 }
 
 function openEventModal(event){
 document.getElementById("eventTitle").innerText=event.title;
 document.getElementById("eventText").innerText=event.text;
-
-let optionsContainer=document.getElementById("eventOptions");
-optionsContainer.innerHTML="";
-
-event.options.forEach(option=>{
+let container=document.getElementById("eventOptions");
+container.innerHTML="";
+event.options.forEach(o=>{
 let btn=document.createElement("button");
 btn.className="optionBtn";
-btn.innerText=option.label+" ["+option.tag+"]";
-btn.onclick=function(){
-resolveEvent(event.title,option.tag);
-};
-optionsContainer.appendChild(btn);
+btn.innerText=o.label+" ["+o.tag+"]";
+btn.onclick=()=>resolveEvent(event.title,o.tag);
+container.appendChild(btn);
 });
-
 document.getElementById("eventModal").style.display="flex";
 }
 
@@ -344,13 +299,31 @@ addLog(title+" — "+tag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* =======================
-   TENSION
-======================= */
+/* ---------- RULES ---------- */
+
+function getThreshold(){if(weCount<5)return 4;if(weCount<10)return 3;return 2;}
+function getTensionColor(){
+if(tension<10)return"#1abc9c";
+if(tension<20)return"#2ecc71";
+if(tension<30)return"#f1c40f";
+if(tension<40)return"#e67e22";
+if(tension<60)return"#e74c3c";
+return"#8b0000";
+}
+function getPresenceTier(){
+if(presence>=13)return"13–15+";
+if(presence>=11)return"11–12";
+if(presence>=9)return"9–10";
+if(presence>=7)return"7–8";
+if(presence>=5)return"5–6";
+if(presence>=3)return"3–4";
+return"0–2";
+}
+
+/* ---------- TENSION ---------- */
 
 function increaseTension(){
-tension++;
-tensionSinceLastWE++;
+tension++;tensionSinceLastWE++;
 addLog("Tension increased to "+tension+".");
 
 let color=getTensionColor();
@@ -362,6 +335,7 @@ tensionRow.appendChild(box);
 if(tensionSinceLastWE>=getThreshold()){
 let slot=document.createElement("div");
 slot.className="weSlot wePulse";
+if(weCount>=10)slot.classList.add("weHigh");
 slot.style.background=color;
 weGrid.appendChild(slot);
 
@@ -372,6 +346,7 @@ drawWorldEvent();
 }
 
 updateUI();
+updateAtmosphere();
 }
 
 function decreaseTension(){
@@ -380,60 +355,50 @@ tension--;
 tensionRow.removeChild(tensionRow.lastChild);
 addLog("Tension decreased to "+tension+".");
 updateUI();
+updateAtmosphere();
 }
 
 function resetTension(){
 tension=0;weCount=0;tensionSinceLastWE=0;
-tensionRow.innerHTML="";
-weGrid.innerHTML="";
+tensionRow.innerHTML="";weGrid.innerHTML="";
 usedEvents=[];
 addLog("Tension reset.");
 updateUI();
+updateAtmosphere();
 }
 
-/* =======================
-   PRESENCE
-======================= */
+/* ---------- PRESENCE ---------- */
 
 function changePresence(v){
-presence+=v;
-if(presence<0)presence=0;
+presence+=v;if(presence<0)presence=0;
 addLog("Presence adjusted to "+presence+".");
 updateUI();
 }
 
 function resetPresence(){
-presence=0;
-addLog("Presence reset.");
-updateUI();
+presence=0;addLog("Presence reset.");updateUI();
 }
 
-/* =======================
-   UI
-======================= */
+/* ---------- UI ---------- */
 
 function updateUI(){
 document.getElementById("tensionValue").innerText=tension;
 document.getElementById("weCount").innerText=weCount;
 document.getElementById("presenceValue").innerText=presence;
 document.getElementById("presenceTier").innerText=getPresenceTier();
-
 let fill=document.getElementById("presenceFill");
 fill.style.width=Math.min(presence*6,100)+"%";
 fill.style.background=presence>=13?"darkred":"gold";
 }
 
-/* =======================
-   CAMPAIGN SYSTEM
-======================= */
+/* ---------- CAMPAIGN ---------- */
 
 function initSlots(){
 saveSlotSelect.innerHTML="";
-slots.forEach(slot=>{
-let option=document.createElement("option");
-option.value=slot;
-option.textContent=campaignNames[slot];
-saveSlotSelect.appendChild(option);
+slots.forEach(s=>{
+let o=document.createElement("option");
+o.value=s;o.textContent=campaignNames[s];
+saveSlotSelect.appendChild(o);
 });
 }
 
@@ -453,7 +418,6 @@ function loadCampaign(){
 let slot=saveSlotSelect.value;
 let data=localStorage.getItem(slot);
 if(!data){alert("No save found.");return;}
-
 let state=JSON.parse(data);
 tension=state.tension;
 weCount=state.weCount;
@@ -479,52 +443,21 @@ weGrid.appendChild(slot);
 
 renderLog();
 updateUI();
+updateAtmosphere();
 }
 
-/* =======================
-   EXPORT / IMPORT
-======================= */
-
-function exportCampaign(){
-let slot=saveSlotSelect.value;
-let data=localStorage.getItem(slot);
-if(!data){alert("Nothing to export.");return;}
-
-let blob=new Blob([data],{type:"application/json"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download=slot+"_campaign.json";
-a.click();
-}
-
-function importCampaign(event){
-let file=event.target.files[0];
-if(!file)return;
-
-let reader=new FileReader();
-reader.onload=function(e){
-let slot=saveSlotSelect.value;
-localStorage.setItem(slot,e.target.result);
-alert("Imported into "+slot);
-};
-reader.readAsText(file);
-}
-
-/* =======================
-   INIT
-======================= */
+/* ---------- INIT ---------- */
 
 let storedNames=localStorage.getItem("campaignNames");
 if(storedNames)campaignNames=JSON.parse(storedNames);
-
 initSlots();
 updateUI();
 renderLog();
+updateAtmosphere();
 
-if('serviceWorker' in navigator){
+if('serviceWorker'in navigator){
 navigator.serviceWorker.register('sw.js');
 }
 </script>
-
 </body>
 </html>
