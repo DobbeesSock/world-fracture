@@ -8,22 +8,22 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {
+body{
     margin:0;
     font-family:Segoe UI, sans-serif;
-    text-align:center;
-    color:#e6d3a3;
     background:#111;
+    color:#e6d3a3;
+    text-align:center;
 }
 
-.section {
+.section{
     margin:20px;
     padding:15px;
     background:#1a1a1a;
     border-radius:10px;
 }
 
-button, select {
+button, select, input{
     margin:5px;
     padding:8px 12px;
     border:none;
@@ -32,45 +32,45 @@ button, select {
     color:#e6d3a3;
 }
 
-#tensionRow {
+#tensionRow{
     display:flex;
     flex-wrap:wrap;
     gap:5px;
     justify-content:center;
 }
 
-.tensionBox {
+.tensionBox{
     width:20px;
     height:20px;
     border-radius:4px;
 }
 
-#weGrid {
+#weGrid{
     display:grid;
     grid-template-columns:repeat(5,1fr);
     gap:6px;
 }
 
-.weSlot {
+.weSlot{
     height:35px;
     background:#222;
     border-radius:4px;
 }
 
-#presenceBar {
+#presenceBar{
     height:12px;
     background:#333;
     border-radius:5px;
     overflow:hidden;
 }
 
-#presenceFill {
+#presenceFill{
     height:100%;
     width:0%;
     transition:.3s;
 }
 
-#logContainer {
+#logContainer{
     max-height:200px;
     overflow-y:auto;
     background:#111;
@@ -79,6 +79,24 @@ button, select {
     text-align:left;
     font-size:0.9em;
 }
+
+/* Modal */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-content{
+    background:#1a1a1a;
+    padding:20px;
+    border-radius:10px;
+    width:90%;
+    max-width:400px;
+}
 </style>
 </head>
 <body>
@@ -86,13 +104,14 @@ button, select {
 <h1>WORLD FRACTURE</h1>
 
 <div class="section">
-<select id="saveSlot">
-<option value="slot1">Campaign Slot 1</option>
-<option value="slot2">Campaign Slot 2</option>
-<option value="slot3">Campaign Slot 3</option>
-</select>
+<select id="saveSlot"></select>
+<input type="text" id="campaignNameInput" placeholder="Campaign Name">
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
+<button onclick="newCampaign()">New Campaign</button>
+<button onclick="exportCampaign()">Export</button>
+<input type="file" id="importFile" style="display:none" onchange="importCampaign(event)">
+<button onclick="document.getElementById('importFile').click()">Import</button>
 </div>
 
 <div class="section">
@@ -123,18 +142,45 @@ button, select {
 <button onclick="clearLog()">Clear Log</button>
 </div>
 
+<div class="modal" id="confirmModal">
+<div class="modal-content">
+<p>Start a new campaign in this slot? This will erase existing data.</p>
+<button onclick="confirmNewCampaign()">Confirm</button>
+<button onclick="closeModal()">Cancel</button>
+</div>
+</div>
+
 <script>
 let tension=0;
 let weCount=0;
 let tensionSinceLastWE=0;
 let presence=0;
 let logEntries=[];
+let campaignNames={
+    slot1:"Campaign Slot 1",
+    slot2:"Campaign Slot 2",
+    slot3:"Campaign Slot 3"
+};
 
+const slots=["slot1","slot2","slot3"];
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
+const saveSlotSelect=document.getElementById("saveSlot");
+
+/* ---------- INIT ---------- */
+function initSlots(){
+    saveSlotSelect.innerHTML="";
+    slots.forEach(slot=>{
+        let option=document.createElement("option");
+        option.value=slot;
+        option.textContent=campaignNames[slot];
+        saveSlotSelect.appendChild(option);
+    });
+}
+
+initSlots();
 
 /* ---------- RULES ---------- */
-
 function getThreshold(){
  if(weCount<5)return 4;
  if(weCount<10)return 3;
@@ -161,11 +207,9 @@ function getPresenceTier(){
 }
 
 /* ---------- LOG ---------- */
-
-function addLog(message){
+function addLog(msg){
  let time=new Date().toLocaleTimeString();
- let entry="["+time+"] "+message;
- logEntries.unshift(entry);
+ logEntries.unshift("["+time+"] "+msg);
  if(logEntries.length>100)logEntries.pop();
  renderLog();
 }
@@ -186,7 +230,6 @@ function clearLog(){
 }
 
 /* ---------- TENSION ---------- */
-
 function increaseTension(){
  tension++;
  tensionSinceLastWE++;
@@ -199,21 +242,14 @@ function increaseTension(){
  tensionRow.appendChild(box);
 
  if(tensionSinceLastWE>=getThreshold()){
-   triggerWE(color);
+   let slot=document.createElement("div");
+   slot.className="weSlot";
+   slot.style.background=color;
+   weGrid.appendChild(slot);
+   weCount++;
    tensionSinceLastWE=0;
+   addLog("World Event triggered.");
  }
-
- updateUI();
-}
-
-function triggerWE(color){
- let slot=document.createElement("div");
- slot.className="weSlot";
- slot.style.background=color;
- weGrid.appendChild(slot);
-
- weCount++;
- addLog("World Event triggered. Total WE: "+weCount+".");
 
  updateUI();
 }
@@ -221,16 +257,13 @@ function triggerWE(color){
 function decreaseTension(){
  if(tension<=0)return;
  tension--;
- tensionSinceLastWE--;
  tensionRow.removeChild(tensionRow.lastChild);
  addLog("Tension decreased to "+tension+".");
  updateUI();
 }
 
 function resetTension(){
- tension=0;
- weCount=0;
- tensionSinceLastWE=0;
+ tension=0; weCount=0; tensionSinceLastWE=0;
  tensionRow.innerHTML="";
  weGrid.innerHTML="";
  addLog("Tension reset.");
@@ -238,14 +271,10 @@ function resetTension(){
 }
 
 /* ---------- PRESENCE ---------- */
-
 function changePresence(v){
  presence+=v;
  if(presence<0)presence=0;
-
- if(v>0) addLog("Presence increased to "+presence+".");
- else addLog("Presence decreased to "+presence+".");
-
+ addLog("Presence adjusted to "+presence+".");
  updateUI();
 }
 
@@ -256,7 +285,6 @@ function resetPresence(){
 }
 
 /* ---------- UI ---------- */
-
 function updateUI(){
  document.getElementById("tensionValue").innerText=tension;
  document.getElementById("weCount").innerText=weCount;
@@ -269,19 +297,25 @@ function updateUI(){
 }
 
 /* ---------- SAVE SYSTEM ---------- */
-
 function saveCampaign(){
- let slot=document.getElementById("saveSlot").value;
+ let slot=saveSlotSelect.value;
+ let name=document.getElementById("campaignNameInput").value;
+ if(name)campaignNames[slot]=name;
+
+ localStorage.setItem("campaignNames",JSON.stringify(campaignNames));
+
  localStorage.setItem(slot,JSON.stringify({
    tension,weCount,tensionSinceLastWE,presence,logEntries
  }));
- alert("Saved to "+slot);
+
+ initSlots();
+ alert("Saved.");
 }
 
 function loadCampaign(){
- let slot=document.getElementById("saveSlot").value;
+ let slot=saveSlotSelect.value;
  let data=localStorage.getItem(slot);
- if(!data){ alert("No save found."); return; }
+ if(!data){alert("No save found.");return;}
 
  let state=JSON.parse(data);
  tension=state.tension;
@@ -292,14 +326,12 @@ function loadCampaign(){
 
  tensionRow.innerHTML="";
  weGrid.innerHTML="";
-
  for(let i=0;i<tension;i++){
    let box=document.createElement("div");
    box.className="tensionBox";
    box.style.background=getTensionColor();
    tensionRow.appendChild(box);
  }
-
  for(let i=0;i<weCount;i++){
    let slot=document.createElement("div");
    slot.className="weSlot";
@@ -311,13 +343,66 @@ function loadCampaign(){
  updateUI();
 }
 
+/* ---------- NEW CAMPAIGN ---------- */
+function newCampaign(){
+ document.getElementById("confirmModal").style.display="flex";
+}
+
+function confirmNewCampaign(){
+ let slot=saveSlotSelect.value;
+ localStorage.removeItem(slot);
+ tension=0;weCount=0;tensionSinceLastWE=0;presence=0;logEntries=[];
+ tensionRow.innerHTML="";
+ weGrid.innerHTML="";
+ renderLog();
+ updateUI();
+ closeModal();
+}
+
+function closeModal(){
+ document.getElementById("confirmModal").style.display="none";
+}
+
+/* ---------- EXPORT ---------- */
+function exportCampaign(){
+ let slot=saveSlotSelect.value;
+ let data=localStorage.getItem(slot);
+ if(!data){alert("Nothing to export.");return;}
+
+ let blob=new Blob([data],{type:"application/json"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download=slot+"_campaign.json";
+ a.click();
+}
+
+/* ---------- IMPORT ---------- */
+function importCampaign(event){
+ let file=event.target.files[0];
+ if(!file)return;
+
+ let reader=new FileReader();
+ reader.onload=function(e){
+   let slot=saveSlotSelect.value;
+   localStorage.setItem(slot,e.target.result);
+   alert("Imported into "+slot);
+ };
+ reader.readAsText(file);
+}
+
+/* ---------- LOAD NAMES ---------- */
+let storedNames=localStorage.getItem("campaignNames");
+if(storedNames){
+ campaignNames=JSON.parse(storedNames);
+}
+initSlots();
+updateUI();
+renderLog();
+
 /* ---------- PWA ---------- */
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register('sw.js');
 }
-
-updateUI();
-renderLog();
 </script>
 
 </body>
