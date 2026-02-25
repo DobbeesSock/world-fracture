@@ -203,9 +203,9 @@ act1:[
 title:"The World Anchor ⚖️",
 text:"A titanic spike of stone plunges endlessly downward. Runes from every culture spiral around it. This is holding something still.",
 options:[
-{label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain +1 stability. Endgame threats grow stronger."},
-{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards (shared among factions). Begin an unavoidable apocalypse track."},
-{label:"Remove the Anchor",tag:"Freedom",effect:"Immediately resolve one endgame threat. Replace it with something unknown."}
+{label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain +1 SM. World Bosses gain +1 activation per Phase."},
+{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards (shared among factions). World Bosses gain +10 HP."},
+{label:"Remove the Anchor",tag:"Freedom",effect:"Immediately spawn a World Boss."}
 ]
 },
 
@@ -340,6 +340,76 @@ options:[
 label:"Resolve the Banners",
 tag:"Escalation",
 effect:"Each faction that chose Yield loses 2 Keywords of their choice. Each faction that chose Stand Proud gains +10 Gold. For each Stand Proud faction, spawn a keyword-hunting creature targeting one of their keywords."
+}
+]
+},
+
+{
+title:"The Map Is Redrawn",
+text:"Old paths collapse. New ones open. The table must vote.",
+options:[
+{
+label:"Stabilize the Region",
+tag:"Stability",
+effect:"No map changes. All factions gain +5 Food."
+},
+{
+label:"Let It Shift",
+tag:"Upheaval",
+effect:"Remove one central terrain location or PoI (table chooses). Replace it with Hazardous Terrain 3x3. The faction with the most Dragon Coins gains +1 Dragon Coin."
+}
+]
+},
+
+{
+title:"The Champion Calls",
+text:"A challenge rings out. Silence is also an answer. In turn order, each faction may Commit or Decline.",
+options:[
+{
+label:"Resolve the Challenge",
+tag:"Glory",
+effect:"Each faction chooses Commit or Decline. Commit: Send 1 unit to the Arena. Decline: Gain +5 Gold. If 2 or more Commit: Spawn an Arena Champion. Winner gains +3 Dragon Coins. Losing units are killed. If only one Commits: That faction gains +15 Gold and no Champion spawns."
+}
+]
+},
+
+{
+title:"The Council Convenes",
+text:"Commanders are summoned. Power shifts in the open.",
+options:[
+{
+label:"Resolve the Council",
+tag:"Politics",
+effect:"Each faction may send one Commander. For each Commander sent, that faction gains +10 Gold. The faction with the most Commanders present gains 1 Blueprint. All other participating factions gain 1 Legendary Potion."
+}
+]
+},
+
+{
+title:"Rumours of Betrayal",
+text:"Something is coming. No one agrees on what. The table must choose one faction to investigate.",
+options:[
+{
+label:"Investigate the Chosen Faction",
+tag:"Suspicion",
+effect:"That faction chooses: Reveal Reserves (Lose 10 Gold, gain +1 Mythic Potion) OR Conceal Assets (Gain +10 Gold, spawn a keyword-hunting creature targeting one of their keywords)."
+}
+]
+},
+
+{
+title:"The Storm Breaks",
+text:"The sky no longer tolerates defiance. The table must vote.",
+options:[
+{
+label:"Seek Shelter",
+tag:"Shelter",
+effect:"All factions skip 1 round of actions. No spawns occur this Round."
+},
+{
+label:"Press On",
+tag:"Defiance",
+effect:"All units ignore terrain penalties this Round. Spawn Stormward Avatar at the map centre."
 }
 ]
 }
