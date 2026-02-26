@@ -6,6 +6,7 @@
 
 <style>
 body{
+    margin:0;
     font-family: serif;
     background:#111;
     color:#e6d3a3;
@@ -17,9 +18,14 @@ body{
     background:#1a1a1a;
     border-radius:10px;
 }
-button{
+button, select{
     margin:5px;
     padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    background:#3a2f1b;
+    color:#e6d3a3;
+    cursor:pointer;
 }
 #presenceBar{
     height:16px;
@@ -31,6 +37,7 @@ button{
 #presenceFill{
     height:100%;
     width:0%;
+    transition:width .3s ease, background .3s ease;
 }
 .modal{
     position:fixed;
@@ -53,12 +60,30 @@ button{
 
 <h1>WORLD FRACTURE</h1>
 
+<!-- SAVE -->
+<div class="section">
+<button onclick="saveCampaign()">Save</button>
+<button onclick="loadCampaign()">Load</button>
+</div>
+
+<!-- ACT -->
+<div class="section">
+<h2>Current Act</h2>
+<select id="actSelector" onchange="switchAct()">
+<option value="act1">Act I</option>
+<option value="act2">Act II</option>
+<option value="act3">Act III</option>
+</select>
+</div>
+
+<!-- TENSION -->
 <div class="section">
 <h2>Tension: <span id="tensionValue">0</span></h2>
 <button onclick="increaseTension()">+Tension</button>
 <button onclick="drawWorldEvent()">Force Event</button>
 </div>
 
+<!-- PRESENCE -->
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
 <div id="presenceBar">
@@ -68,6 +93,7 @@ button{
 <button onclick="changePresence(-1)">-1</button>
 </div>
 
+<!-- MODAL -->
 <div class="modal" id="eventModal">
 <div class="modal-content">
 <h2 id="eventTitle"></h2>
@@ -76,23 +102,51 @@ button{
 </div>
 </div>
 
+<!-- LOAD EVENTS -->
 <script src="events.js"></script>
 
 <script>
 
+/* ================= STATE ================= */
+
 let tension = 0;
+let weCount = 0;
 let presence = 0;
+let currentAct = "act1";
+
+let usedEventsByAct = {
+  act1: [],
+  act2: [],
+  act3: []
+};
+
+/* ================= ACT ================= */
+
+function switchAct(){
+    currentAct = document.getElementById("actSelector").value;
+}
+
+/* ================= TENSION ================= */
+
+function getThreshold(){
+    if(weCount < 5) return 4;
+    if(weCount < 10) return 3;
+    return 2;
+}
 
 function increaseTension(){
     tension++;
     document.getElementById("tensionValue").textContent = tension;
 
-    if(tension >= 4){
+    if(tension >= getThreshold()){
         tension = 0;
+        weCount++;
         document.getElementById("tensionValue").textContent = tension;
         drawWorldEvent();
     }
 }
+
+/* ================= PRESENCE ================= */
 
 function changePresence(v){
     presence += v;
@@ -100,26 +154,40 @@ function changePresence(v){
 
     document.getElementById("presenceValue").textContent = presence;
 
-    let percent = Math.min((presence/10)*100,100);
-    document.getElementById("presenceFill").style.width = percent + "%";
+    let percent = Math.min((presence/15)*100,100);
+    let fill = document.getElementById("presenceFill");
+    fill.style.width = percent + "%";
+
+    if(presence <= 2) fill.style.background = "#1abc9c";
+    else if(presence <= 4) fill.style.background = "#2ecc71";
+    else if(presence <= 6) fill.style.background = "#f1c40f";
+    else if(presence <= 8) fill.style.background = "#e67e22";
+    else if(presence <= 10) fill.style.background = "#e74c3c";
+    else fill.style.background = "#8b0000";
 }
+
+/* ================= EVENT DRAW ================= */
 
 function drawWorldEvent(){
 
-    if(typeof worldEventPools === "undefined"){
-        console.error("events.js not loaded");
-        return;
+    if(typeof worldEventPools === "undefined") return;
+
+    let pool = worldEventPools[currentAct];
+    if(!pool || pool.length === 0) return;
+
+    let used = usedEventsByAct[currentAct];
+
+    if(used.length >= pool.length){
+        usedEventsByAct[currentAct] = [];
+        used = [];
     }
 
-    let pool = worldEventPools.act1;
+    let available = pool.filter((_,i)=>!used.includes(i));
+    let randomIndex = Math.floor(Math.random() * available.length);
+    let event = available[randomIndex];
 
-    if(!pool || pool.length === 0){
-        console.error("No events found");
-        return;
-    }
-
-    let randomIndex = Math.floor(Math.random() * pool.length);
-    let event = pool[randomIndex];
+    let realIndex = pool.indexOf(event);
+    usedEventsByAct[currentAct].push(realIndex);
 
     openEventModal(event);
 }
@@ -140,6 +208,36 @@ function openEventModal(event){
     });
 
     document.getElementById("eventModal").style.display="flex";
+}
+
+/* ================= SAVE / LOAD ================= */
+
+function saveCampaign(){
+    localStorage.setItem("wfSave", JSON.stringify({
+        tension,
+        weCount,
+        presence,
+        currentAct,
+        usedEventsByAct
+    }));
+}
+
+function loadCampaign(){
+    let data = localStorage.getItem("wfSave");
+    if(!data) return;
+
+    let state = JSON.parse(data);
+
+    tension = state.tension || 0;
+    weCount = state.weCount || 0;
+    presence = state.presence || 0;
+    currentAct = state.currentAct || "act1";
+    usedEventsByAct = state.usedEventsByAct || usedEventsByAct;
+
+    document.getElementById("actSelector").value = currentAct;
+    document.getElementById("tensionValue").textContent = tension;
+    document.getElementById("presenceValue").textContent = presence;
+    changePresence(0);
 }
 
 </script>
