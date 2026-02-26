@@ -5,14 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Fracture</title>
 
-<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 body{
     margin:0;
     font-family:'Cinzel', serif;
-    letter-spacing:0.5px;
     background:#111;
     color:#e6d3a3;
     text-align:center;
@@ -127,17 +125,18 @@ button, select, input{
 <h1>WORLD FRACTURE</h1>
 
 <div class="section">
+<select id="saveSlot">
+<option value="slot1">Campaign Slot 1</option>
+<option value="slot2">Campaign Slot 2</option>
+<option value="slot3">Campaign Slot 3</option>
+</select>
+<input type="text" id="campaignNameInput" placeholder="Campaign Name">
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
-</div>
-
-<div class="section">
-<h2>Current Act</h2>
-<select id="actSelector" onchange="attemptActChange()">
-<option value="act1">Act I</option>
-<option value="act2">Act II</option>
-<option value="act3">Act III</option>
-</select>
+<button onclick="newCampaign()">New Campaign</button>
+<button onclick="exportCampaign()">Export</button>
+<input type="file" id="importFile" style="display:none" onchange="importCampaign(event)">
+<button onclick="document.getElementById('importFile').click()">Import</button>
 </div>
 
 <div class="section">
@@ -156,6 +155,7 @@ button, select, input{
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
 <div id="presenceBar"><div id="presenceFill"></div></div>
+<div>Tier: <span id="presenceTier">0–2</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
 <button onclick="resetPresence()">Reset</button>
@@ -179,154 +179,58 @@ button, select, input{
 
 <script>
 let tension=0,weCount=0,tensionSinceLastWE=0,presence=0;
-let logEntries=[];
-let usedEventsByAct={act1:[],act2:[],act3:[]};
-let currentAct="act1";
+let logEntries=[],usedEvents=[];
 let selectedEventTitle="",selectedTag="";
 
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
-const actSelector=document.getElementById("actSelector");
 
-/* ================== EVENT POOLS ================== */
+/* ================= EVENTS ================= */
 
 const worldEventPools={
-act1:[ /* PASTE YOUR 45 ACT I EVENTS HERE */ ],
-act2:[],
-act3:[]
+act1:[
+
+{
+title:"The World Anchor ⚖️",
+text:"A titanic spike of stone plunges endlessly downward.",
+options:[
+{label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain 1 Relic."},
+{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards and spawn a World Boss."},
+{label:"Remove the Anchor",tag:"Freedom",effect:"Spawn 2 Creatures."}
+]
+},
+
+{
+title:"The Shared Grave ⚖️",
+text:"Banners of every faction hang in ruin.",
+options:[
+{label:"Honor the Dead",tag:"Reverence",effect:"All factions gain 1 Mythic Potion."},
+{label:"Loot the Graves",tag:"Desecration",effect:"Each faction gains 1 Chest Card."}
+]
+},
+
+{
+title:"Market Fluctuation",
+text:"Trade routes tighten then boom.",
+options:[
+{label:"Let Markets Shift",tag:"Prosperity",effect:"Each faction gains +10 Gold."}
+]
+}
+
+]
 };
 
-/* ================== COLORS ================== */
-
-function getTensionColor(){
-if(tension<10) return "#1abc9c";
-if(tension<20) return "#2ecc71";
-if(tension<30) return "#f1c40f";
-if(tension<40) return "#e67e22";
-if(tension<60) return "#e74c3c";
-return "#8b0000";
-}
-
-/* ================== ACT SWITCH ================== */
-
-function attemptActChange(){
-let newAct=actSelector.value;
-if(newAct===currentAct) return;
-
-if(!confirm("Switching Acts will reset Tension and clear World Events.\nContinue?")){
-actSelector.value=currentAct;
-return;
-}
-
-currentAct=newAct;
-resetTension();
-usedEventsByAct[currentAct]=[];
-addLog("Transitioned to "+actSelector.options[actSelector.selectedIndex].text+".");
-}
-
-/* ================== TENSION ================== */
-
-function increaseTension(){
-tension++;
-tensionSinceLastWE++;
-
-let color=getTensionColor();
-
-let box=document.createElement("div");
-box.className="tensionBox";
-box.style.background=color;
-tensionRow.appendChild(box);
-
-updateTensionUI();
-
-if(tensionSinceLastWE>=4){
-createWESlot(color);
-tensionSinceLastWE=0;
-drawWorldEvent();
-}
-}
-
-function decreaseTension(){
-if(tension<=0) return;
-tension--;
-tensionRow.removeChild(tensionRow.lastChild);
-updateTensionUI();
-}
-
-function resetTension(){
-tension=0;
-weCount=0;
-tensionSinceLastWE=0;
-tensionRow.innerHTML="";
-weGrid.innerHTML="";
-updateTensionUI();
-document.getElementById("weCount").innerText=0;
-}
-
-function updateTensionUI(){
-document.getElementById("tensionValue").innerText=tension;
-}
-
-function createWESlot(color){
-let slot=document.createElement("div");
-slot.className="weSlot";
-slot.style.background=color;
-weGrid.appendChild(slot);
-weCount++;
-document.getElementById("weCount").innerText=weCount;
-}
-
-/* ================== PRESENCE ================== */
-
-function changePresence(v){
-presence+=v;
-if(presence<0)presence=0;
-updatePresenceUI();
-}
-
-function resetPresence(){
-presence=0;
-updatePresenceUI();
-}
-
-function updatePresenceUI(){
-document.getElementById("presenceValue").innerText=presence;
-let percent=Math.min((presence/15)*100,100);
-let fill=document.getElementById("presenceFill");
-fill.style.width=percent+"%";
-
-if(presence<=2) fill.style.background="#1abc9c";
-else if(presence<=4) fill.style.background="#2ecc71";
-else if(presence<=6) fill.style.background="#f1c40f";
-else if(presence<=8) fill.style.background="#e67e22";
-else if(presence<=10) fill.style.background="#e74c3c";
-else fill.style.background="#8b0000";
-}
-
-/* ================== DRAW ================== */
+/* ================= ENGINE ================= */
 
 function drawWorldEvent(){
-let pool=worldEventPools[currentAct];
-if(!pool||pool.length===0){
-addLog("No World Events in this Act yet.");
-return;
-}
-
-let used=usedEventsByAct[currentAct];
-if(used.length===pool.length){
-usedEventsByAct[currentAct]=[];
-used=[];
-}
-
-let available=pool.filter((_,i)=>!used.includes(i));
+let pool=worldEventPools.act1;
+if(usedEvents.length===pool.length)usedEvents=[];
+let available=pool.filter((_,i)=>!usedEvents.includes(i));
 let index=Math.floor(Math.random()*available.length);
 let eventIndex=pool.indexOf(available[index]);
-used.push(eventIndex);
-
+usedEvents.push(eventIndex);
 openEventModal(pool[eventIndex]);
 }
-
-/* ================== MODAL ================== */
 
 function openEventModal(event){
 selectedEventTitle=event.title;
@@ -364,11 +268,91 @@ addLog(selectedEventTitle+" — "+selectedTag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* ================== LOG ================== */
+/* ================= TENSION ================= */
+
+function getThreshold(){
+if(weCount<5)return 4;
+if(weCount<10)return 3;
+return 2;
+}
+
+function getTensionColor(){
+if(tension<10)return"#1abc9c";
+if(tension<20)return"#2ecc71";
+if(tension<30)return"#f1c40f";
+if(tension<40)return"#e67e22";
+if(tension<60)return"#e74c3c";
+return"#8b0000";
+}
+
+function increaseTension(){
+tension++;tensionSinceLastWE++;
+document.getElementById("tensionValue").innerText=tension;
+
+let color=getTensionColor();
+let box=document.createElement("div");
+box.className="tensionBox";
+box.style.background=color;
+tensionRow.appendChild(box);
+
+if(tensionSinceLastWE>=getThreshold()){
+let slot=document.createElement("div");
+slot.className="weSlot";
+slot.style.background=color;
+weGrid.appendChild(slot);
+weCount++;tensionSinceLastWE=0;
+document.getElementById("weCount").innerText=weCount;
+drawWorldEvent();
+}
+}
+
+function decreaseTension(){
+if(tension<=0)return;
+tension--;
+tensionRow.removeChild(tensionRow.lastChild);
+document.getElementById("tensionValue").innerText=tension;
+}
+
+function resetTension(){
+tension=0;weCount=0;tensionSinceLastWE=0;
+tensionRow.innerHTML="";weGrid.innerHTML="";
+usedEvents=[];
+document.getElementById("tensionValue").innerText=0;
+document.getElementById("weCount").innerText=0;
+}
+
+/* ================= PRESENCE ================= */
+
+function changePresence(v){
+presence+=v;if(presence<0)presence=0;
+updatePresence();
+}
+
+function resetPresence(){presence=0;updatePresence();}
+
+function updatePresence(){
+document.getElementById("presenceValue").innerText=presence;
+let percent=Math.min((presence/15)*100,100);
+let fill=document.getElementById("presenceFill");
+fill.style.width=percent+"%";
+
+let tier="0–2";
+if(presence>=3&&presence<=4)tier="3–4";
+if(presence>=5&&presence<=6)tier="5–6";
+if(presence>=7&&presence<=8)tier="7–8";
+if(presence>=9&&presence<=10)tier="9–10";
+if(presence>=11&&presence<=12)tier="11–12";
+if(presence>=13)tier="13–15";
+
+document.getElementById("presenceTier").innerText=tier;
+}
+
+/* ================= LOG ================= */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
 logEntries.unshift("["+time+"] "+msg);
+if(logEntries.length>100)logEntries.pop();
 renderLog();
 }
 
@@ -382,23 +366,24 @@ c.appendChild(d);
 });
 }
 
-function clearLog(){
-logEntries=[];
-renderLog();
-}
+function clearLog(){logEntries=[];renderLog();}
 
-/* ================== SAVE / LOAD ================== */
+/* ================= SAVE SYSTEM ================= */
 
 function saveCampaign(){
-localStorage.setItem("campaignData",JSON.stringify({
-tension,weCount,tensionSinceLastWE,presence,logEntries,usedEventsByAct,currentAct
-}));
+let slot=document.getElementById("saveSlot").value;
+let data={
+tension,weCount,tensionSinceLastWE,presence,logEntries,usedEvents,
+campaignName:document.getElementById("campaignNameInput").value
+};
+localStorage.setItem(slot,JSON.stringify(data));
 alert("Saved.");
 }
 
 function loadCampaign(){
-let data=localStorage.getItem("campaignData");
-if(!data)return;
+let slot=document.getElementById("saveSlot").value;
+let data=localStorage.getItem(slot);
+if(!data)return alert("No save in this slot.");
 let state=JSON.parse(data);
 
 tension=state.tension||0;
@@ -406,18 +391,43 @@ weCount=state.weCount||0;
 tensionSinceLastWE=state.tensionSinceLastWE||0;
 presence=state.presence||0;
 logEntries=state.logEntries||[];
-usedEventsByAct=state.usedEventsByAct||{act1:[],act2:[],act3:[]};
-currentAct=state.currentAct||"act1";
+usedEvents=state.usedEvents||[];
+document.getElementById("campaignNameInput").value=state.campaignName||"";
 
-actSelector.value=currentAct;
-updateTensionUI();
-updatePresenceUI();
+resetTension();
+for(let i=0;i<tension;i++)increaseTension();
+updatePresence();
 renderLog();
 }
 
-updateTensionUI();
-updatePresenceUI();
-renderLog();
+function newCampaign(){
+if(!confirm("Start new campaign? This clears current progress."))return;
+resetTension();
+resetPresence();
+clearLog();
+}
+
+function exportCampaign(){
+let slot=document.getElementById("saveSlot").value;
+let data=localStorage.getItem(slot);
+if(!data)return alert("No data to export.");
+let blob=new Blob([data],{type:"application/json"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="campaign.json";
+a.click();
+}
+
+function importCampaign(e){
+let file=e.target.files[0];
+if(!file)return;
+let reader=new FileReader();
+reader.onload=function(){
+localStorage.setItem(document.getElementById("saveSlot").value,reader.result);
+alert("Imported.");
+};
+reader.readAsText(file);
+}
 </script>
 </body>
 </html>
