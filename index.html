@@ -191,6 +191,7 @@ addLog("Switched to "+currentAct.toUpperCase());
 
 /* ================= TENSION ================= */
 
+<button onclick="drawWorldEvent()">Force Event</button>
 function getThreshold(){
 if(weCount<5) return 4;
 if(weCount<10) return 3;
@@ -261,20 +262,32 @@ else{fill.style.background="#8b0000";tier.textContent="Cataclysm (11+)";}
 
 function drawWorldEvent(){
 
+  console.log("---- DRAW WORLD EVENT ----");
+  console.log("Current Act:", currentAct);
+  console.log("Event Pools Object:", worldEventPools);
+
+  if(typeof worldEventPools === "undefined"){
+    console.error("worldEventPools is NOT loaded. events.js failed.");
+    return;
+  }
+
   if(!worldEventPools[currentAct]){
-    console.error("No event pool for:", currentAct);
+    console.error("No event pool found for:", currentAct);
     return;
   }
 
   let pool = worldEventPools[currentAct];
-  let used = usedEventsByAct[currentAct];
+  console.log("Pool Length:", pool.length);
 
   if(pool.length === 0){
-    console.warn("Event pool empty for:", currentAct);
+    console.warn("Event pool is empty.");
     return;
   }
 
-  if(used.length === pool.length){
+  let used = usedEventsByAct[currentAct] || [];
+
+  if(used.length >= pool.length){
+    console.log("All events used. Resetting pool.");
     usedEventsByAct[currentAct] = [];
     used = [];
   }
@@ -282,18 +295,20 @@ function drawWorldEvent(){
   let available = pool.filter((_,i)=>!used.includes(i));
 
   if(available.length === 0){
-    console.warn("No available events.");
+    console.warn("No available events after filter.");
     return;
   }
 
   let randomIndex = Math.floor(Math.random()*available.length);
-  let eventIndex = pool.indexOf(available[randomIndex]);
+  let event = available[randomIndex];
 
-  used.push(eventIndex);
+  let realIndex = pool.indexOf(event);
+  usedEventsByAct[currentAct].push(realIndex);
 
-  openEventModal(pool[eventIndex]);
+  console.log("Opening Event:", event.title);
+
+  openEventModal(event);
 }
-
 function openEventModal(event){
 document.getElementById("eventTitle").textContent=event.title;
 document.getElementById("eventText").textContent=event.text;
