@@ -724,30 +724,45 @@ function decreaseTension(){
 /* PRESENCE */
 
 function updatePresence(){
-document.getElementById("presenceValue").innerText=presence;
-let percent=Math.min((presence/15)*100,100);
-let fill=document.getElementById("presenceFill");
-fill.style.width=percent+"%";
 
-if(presence<=2)fill.style.background="#1abc9c";
-else if(presence<=4)fill.style.background="#2ecc71";
-else if(presence<=6)fill.style.background="#f1c40f";
-else if(presence<=8)fill.style.background="#e67e22";
-else if(presence<=10)fill.style.background="#e74c3c";
-else fill.style.background="#8b0000";
+  const valueEl = document.getElementById("presenceValue");
+  const tierEl  = document.getElementById("presenceTier");
+  const fill    = document.getElementById("presenceFill");
+
+  valueEl.textContent = presence;
+
+  const percent = Math.min((presence / 15) * 100, 100);
+  fill.style.width = percent + "%";
+
+  let tierText = "";
+
+  if(presence <= 2){
+    fill.style.background="#1abc9c";
+    tierText = "0–2 (Dormant)";
+  }
+  else if(presence <= 4){
+    fill.style.background="#2ecc71";
+    tierText = "3–4 (Stirring)";
+  }
+  else if(presence <= 6){
+    fill.style.background="#f1c40f";
+    tierText = "5–6 (Unstable)";
+  }
+  else if(presence <= 8){
+    fill.style.background="#e67e22";
+    tierText = "7–8 (Hostile)";
+  }
+  else if(presence <= 10){
+    fill.style.background="#e74c3c";
+    tierText = "9–10 (Critical)";
+  }
+  else{
+    fill.style.background="#8b0000";
+    tierText = "11+ (Cataclysm)";
+  }
+
+  tierEl.textContent = tierText;
 }
-
-function changePresence(v){
-presence+=v;
-if(presence<0)presence=0;
-updatePresence();
-}
-
-function resetPresence(){
-presence=0;
-updatePresence();
-}
-
 /* LOG */
 
 function addLog(msg){
