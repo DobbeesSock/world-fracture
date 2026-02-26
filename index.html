@@ -271,12 +271,25 @@ function openEventModal(event){
     let container=document.getElementById("eventOptions");
     container.innerHTML="";
 
-    event.options.forEach(o=>{
-        let btn=document.createElement("button");
-        btn.textContent=o.label+" ["+o.tag+"]";
-        btn.onclick=()=>document.getElementById("eventModal").style.display="none";
-        container.appendChild(btn);
-    });
+   event.options.forEach(o => {
+
+    let btn = document.createElement("button");
+
+    btn.innerHTML = `
+        <strong>${o.label}</strong> [${o.tag}]
+        <div style="font-size:0.85em;opacity:0.8;margin-top:4px;">
+            ${o.effect || ""}
+        </div>
+    `;
+
+    btn.onclick = () => {
+        addLog(event.title + " — " + o.tag);
+        document.getElementById("eventModal").style.display = "none";
+    };
+
+    container.appendChild(btn);
+
+});
 
     document.getElementById("eventModal").style.display="flex";
 }
