@@ -655,23 +655,26 @@ else{ fill.style.background="#8b0000"; tier.textContent="Cataclysm (11+)"; }
 
 function drawWorldEvent(){
 
-let pool=worldEventPools[currentAct];
-let used=usedEventsByAct[currentAct];
+  let pool = worldEventPools[currentAct];
+  let used = usedEventsByAct[currentAct];
 
-if(pool.length===0) return;
+  if(pool.length === 0) return;
 
-if(used.length===pool.length){
-usedEventsByAct[currentAct]=[];
-used=[];
-}
+  // If all events used, reset
+  if(used.length === pool.length){
+    usedEventsByAct[currentAct] = [];
+    used = [];
+  }
 
-let available=pool.filter((_,i)=>!used.includes(i));
-let randomIndex=Math.floor(Math.random()*available.length);
-let eventIndex=pool.indexOf(available[randomIndex]);
+  // Filter unused events
+  let available = pool.filter((_, i) => !used.includes(i));
 
-used.push(eventIndex);
+  let randomIndex = Math.floor(Math.random() * available.length);
+  let eventIndex = pool.indexOf(available[randomIndex]);
 
-openEventModal(pool[eventIndex]);
+  used.push(eventIndex);
+
+  openEventModal(pool[eventIndex]);
 }
 
 function openEventModal(event){
