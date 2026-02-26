@@ -33,8 +33,6 @@ button, select{
     cursor:pointer;
 }
 
-/* TENSION */
-
 #tensionRow{
     display:flex;
     flex-wrap:wrap;
@@ -61,8 +59,6 @@ button, select{
     background:#e74c3c;
 }
 
-/* PRESENCE */
-
 #presenceBar{
     height:16px;
     width:100%;
@@ -77,20 +73,6 @@ button, select{
     transition:width .3s ease, background .3s ease;
 }
 
-/* LOG */
-
-#logContainer{
-    max-height:200px;
-    overflow-y:auto;
-    background:#111;
-    padding:10px;
-    border-radius:6px;
-    text-align:left;
-    font-size:0.9em;
-}
-
-/* MODAL */
-
 .modal{
     position:fixed;
     inset:0;
@@ -98,7 +80,6 @@ button, select{
     display:none;
     align-items:center;
     justify-content:center;
-    z-index:1000;
 }
 
 .modal-content{
@@ -109,26 +90,6 @@ button, select{
     max-width:500px;
     text-align:left;
 }
-
-.optionBtn{
-    display:block;
-    width:100%;
-    margin:8px 0;
-    text-align:left;
-}
-
-#effectBox{
-    margin-top:15px;
-    padding:10px;
-    background:#222;
-    border-radius:6px;
-    display:none;
-}
-
-#confirmBtn{
-    margin-top:10px;
-    display:none;
-}
 </style>
 </head>
 <body>
@@ -136,19 +97,8 @@ button, select{
 <h1>WORLD FRACTURE</h1>
 
 <div class="section">
-<select id="saveSlot">
-<option value="slot1">Campaign Slot 1</option>
-<option value="slot2">Campaign Slot 2</option>
-<option value="slot3">Campaign Slot 3</option>
-</select>
-<button onclick="saveCampaign()">Save</button>
-<button onclick="loadCampaign()">Load</button>
-<button onclick="newCampaign()">New Campaign</button>
-</div>
-
-<div class="section">
 <h2>Current Act</h2>
-<select id="actSelector">
+<select id="actSelector" onchange="switchAct()">
 <option value="act1">Act I</option>
 <option value="act2">Act II</option>
 <option value="act3">Act III</option>
@@ -179,19 +129,11 @@ button, select{
 <button onclick="resetPresence()">Reset</button>
 </div>
 
-<div class="section">
-<h2>Cave Log</h2>
-<div id="logContainer"></div>
-<button onclick="clearLog()">Clear Log</button>
-</div>
-
 <div class="modal" id="eventModal">
 <div class="modal-content">
 <h2 id="eventTitle"></h2>
 <p id="eventText"></p>
 <div id="eventOptions"></div>
-<div id="effectBox"></div>
-<button id="confirmBtn">Confirm Resolution</button>
 </div>
 </div>
 
@@ -203,7 +145,8 @@ let tension=0;
 let tensionSinceLastWE=0;
 let weCount=0;
 let presence=0;
-let logEntries=[];
+let currentAct="act1";
+let usedEventsByAct={act1:[],act2:[],act3:[]};
 
 /* ================= EVENTS ================= */
 
@@ -216,43 +159,33 @@ options:[
 {label:"Reinforce",tag:"Order",effect:"All factions gain 1 Relic."},
 {label:"Damage",tag:"Profit",effect:"Spawn a World Boss."}
 ]
-},
+}
+],
+act2:[
 {
-title:"The Silent Contract ⚖️",
-text:"A stone table waits for signatures.",
+title:"Act II Test Event",
+text:"This is an Act II test event.",
 options:[
-{label:"Sign Together",tag:"Alliance",effect:"Ignore hostility once this campaign."},
-{label:"Refuse",tag:"Independence",effect:"Gain 2 Legendary Potions."}
+{label:"Test",tag:"Test",effect:"Nothing happens."}
 ]
 }
 ],
-act2:[],
 act3:[]
 };
 
-/* ================= RENDER ================= */
+/* ================= ACT SWITCH ================= */
 
-function renderTension(){
-const row=document.getElementById("tensionRow");
-const grid=document.getElementById("weGrid");
+function switchAct(){
+let newAct=document.getElementById("actSelector").value;
+if(newAct===currentAct) return;
 
-row.innerHTML="";
-grid.innerHTML="";
-
-for(let i=0;i<tension;i++){
-const box=document.createElement("div");
-box.className="tensionBox";
-row.appendChild(box);
+if(!confirm("Switching Acts resets Tension. Continue?")){
+document.getElementById("actSelector").value=currentAct;
+return;
 }
 
-for(let i=0;i<weCount;i++){
-const slot=document.createElement("div");
-slot.className="weSlot";
-grid.appendChild(slot);
-}
-
-document.getElementById("tensionValue").textContent=tension;
-document.getElementById("weCount").textContent=weCount;
+currentAct=newAct;
+resetTension();
 }
 
 /* ================= TENSION ================= */
@@ -267,64 +200,45 @@ function increaseTension(){
 tension++;
 tensionSinceLastWE++;
 
+document.getElementById("tensionValue").textContent=tension;
+
+let box=document.createElement("div");
+box.className="tensionBox";
+document.getElementById("tensionRow").appendChild(box);
+
 if(tensionSinceLastWE>=getThreshold()){
 tensionSinceLastWE=0;
+
+let slot=document.createElement("div");
+slot.className="weSlot";
+document.getElementById("weGrid").appendChild(slot);
+
 weCount++;
+document.getElementById("weCount").textContent=weCount;
+
 drawWorldEvent();
 }
-
-renderTension();
 }
 
 function decreaseTension(){
 if(tension<=0) return;
 tension--;
-renderTension();
+document.getElementById("tensionValue").textContent=tension;
+let row=document.getElementById("tensionRow");
+if(row.lastChild) row.removeChild(row.lastChild);
 }
 
 function resetTension(){
 tension=0;
 weCount=0;
 tensionSinceLastWE=0;
-renderTension();
+document.getElementById("tensionRow").innerHTML="";
+document.getElementById("weGrid").innerHTML="";
+document.getElementById("tensionValue").textContent=0;
+document.getElementById("weCount").textContent=0;
 }
 
 /* ================= PRESENCE ================= */
-
-function updatePresence(){
-document.getElementById("presenceValue").textContent=presence;
-
-const fill=document.getElementById("presenceFill");
-const tier=document.getElementById("presenceTier");
-
-const percent=Math.min((presence/15)*100,100);
-fill.style.width=percent+"%";
-
-if(presence<=2){
-fill.style.background="#1abc9c";
-tier.textContent="Dormant (0–2)";
-}
-else if(presence<=4){
-fill.style.background="#2ecc71";
-tier.textContent="Stirring (3–4)";
-}
-else if(presence<=6){
-fill.style.background="#f1c40f";
-tier.textContent="Unstable (5–6)";
-}
-else if(presence<=8){
-fill.style.background="#e67e22";
-tier.textContent="Hostile (7–8)";
-}
-else if(presence<=10){
-fill.style.background="#e74c3c";
-tier.textContent="Critical (9–10)";
-}
-else{
-fill.style.background="#8b0000";
-tier.textContent="Cataclysm (11+)";
-}
-}
 
 function changePresence(v){
 presence+=v;
@@ -337,102 +251,63 @@ presence=0;
 updatePresence();
 }
 
-/* ================= EVENTS ================= */
+function updatePresence(){
+document.getElementById("presenceValue").textContent=presence;
+let fill=document.getElementById("presenceFill");
+let tier=document.getElementById("presenceTier");
+
+let percent=Math.min((presence/15)*100,100);
+fill.style.width=percent+"%";
+
+if(presence<=2){ fill.style.background="#1abc9c"; tier.textContent="Dormant (0–2)"; }
+else if(presence<=4){ fill.style.background="#2ecc71"; tier.textContent="Stirring (3–4)"; }
+else if(presence<=6){ fill.style.background="#f1c40f"; tier.textContent="Unstable (5–6)"; }
+else if(presence<=8){ fill.style.background="#e67e22"; tier.textContent="Hostile (7–8)"; }
+else if(presence<=10){ fill.style.background="#e74c3c"; tier.textContent="Critical (9–10)"; }
+else{ fill.style.background="#8b0000"; tier.textContent="Cataclysm (11+)"; }
+}
+
+/* ================= EVENT DRAW ================= */
 
 function drawWorldEvent(){
-const pool=worldEventPools.act1;
+
+let pool=worldEventPools[currentAct];
+let used=usedEventsByAct[currentAct];
+
 if(pool.length===0) return;
 
-const event=pool[Math.floor(Math.random()*pool.length)];
-openEventModal(event);
+if(used.length===pool.length){
+usedEventsByAct[currentAct]=[];
+used=[];
+}
+
+let available=pool.filter((_,i)=>!used.includes(i));
+let randomIndex=Math.floor(Math.random()*available.length);
+let eventIndex=pool.indexOf(available[randomIndex]);
+
+used.push(eventIndex);
+
+openEventModal(pool[eventIndex]);
 }
 
 function openEventModal(event){
 document.getElementById("eventTitle").textContent=event.title;
 document.getElementById("eventText").textContent=event.text;
 
-const container=document.getElementById("eventOptions");
+let container=document.getElementById("eventOptions");
 container.innerHTML="";
 
 event.options.forEach(o=>{
-const btn=document.createElement("button");
-btn.className="optionBtn";
+let btn=document.createElement("button");
 btn.textContent=o.label+" ["+o.tag+"]";
-btn.onclick=()=>showEffect(o.tag,o.effect);
+btn.onclick=()=>document.getElementById("eventModal").style.display="none";
 container.appendChild(btn);
 });
 
-document.getElementById("effectBox").style.display="none";
-document.getElementById("confirmBtn").style.display="none";
 document.getElementById("eventModal").style.display="flex";
 }
 
-function showEffect(tag,effect){
-const box=document.getElementById("effectBox");
-box.textContent=effect;
-box.style.display="block";
-
-const confirm=document.getElementById("confirmBtn");
-confirm.style.display="block";
-confirm.onclick=()=>{
-addLog(tag+" chosen");
-document.getElementById("eventModal").style.display="none";
-};
-}
-
-/* ================= LOG ================= */
-
-function addLog(msg){
-const time=new Date().toLocaleTimeString();
-logEntries.unshift("["+time+"] "+msg);
-renderLog();
-}
-
-function renderLog(){
-const container=document.getElementById("logContainer");
-container.innerHTML="";
-logEntries.forEach(e=>{
-const div=document.createElement("div");
-div.textContent=e;
-container.appendChild(div);
-});
-}
-
-function clearLog(){
-logEntries=[];
-renderLog();
-}
-
-/* ================= SAVE ================= */
-
-function saveCampaign(){
-localStorage.setItem("wfSave",JSON.stringify({tension,weCount,tensionSinceLastWE,presence}));
-alert("Saved.");
-}
-
-function loadCampaign(){
-const data=localStorage.getItem("wfSave");
-if(!data) return;
-const state=JSON.parse(data);
-
-tension=state.tension||0;
-weCount=state.weCount||0;
-tensionSinceLastWE=state.tensionSinceLastWE||0;
-presence=state.presence||0;
-
-renderTension();
-updatePresence();
-}
-
-function newCampaign(){
-resetTension();
-resetPresence();
-clearLog();
-}
-
-/* ================= INIT ================= */
-
-renderTension();
+/* INIT */
 updatePresence();
 
 </script>
