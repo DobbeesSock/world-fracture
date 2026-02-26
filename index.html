@@ -33,7 +33,7 @@ button, select, input{
     cursor:pointer;
 }
 
-/* ===== TENSION ===== */
+/* TENSION */
 
 #tensionRow{
     display:flex;
@@ -59,7 +59,7 @@ button, select, input{
     border-radius:4px;
 }
 
-/* ===== PRESENCE ===== */
+/* PRESENCE */
 
 #presenceBar{
     height:16px;
@@ -72,11 +72,10 @@ button, select, input{
 #presenceFill{
     height:100%;
     width:0%;
-    background:#1abc9c;
-    transition:width 0.3s ease, background 0.3s ease;
+    transition:width .3s ease, background .3s ease;
 }
 
-/* ===== LOG ===== */
+/* LOG */
 
 #logContainer{
     max-height:200px;
@@ -88,7 +87,7 @@ button, select, input{
     font-size:0.9em;
 }
 
-/* ===== MODAL ===== */
+/* MODAL */
 
 .modal{
     position:fixed;
@@ -140,13 +139,9 @@ button, select, input{
 <option value="slot2">Campaign Slot 2</option>
 <option value="slot3">Campaign Slot 3</option>
 </select>
-<input type="text" id="campaignNameInput" placeholder="Campaign Name">
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
 <button onclick="newCampaign()">New Campaign</button>
-<button onclick="exportCampaign()">Export</button>
-<input type="file" id="importFile" style="display:none" onchange="importCampaign(event)">
-<button onclick="document.getElementById('importFile').click()">Import</button>
 </div>
 
 <div class="section">
@@ -200,7 +195,7 @@ button, select, input{
 
 <script>
 
-/* ===== STATE ===== */
+/* STATE */
 
 let tension=0,weCount=0,tensionSinceLastWE=0,presence=0;
 let logEntries=[];
@@ -211,27 +206,26 @@ let selectedEventTitle="",selectedTag="";
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
 
-/* ===== EVENT POOLS ===== */
+/* EVENT POOLS */
 
 const worldEventPools={
 act1:[
+
 {
 title:"The World Anchor ⚖️",
-text:"A titanic spike of stone plunges endlessly downward. Runes spiral across its surface.",
+text:"A titanic spike of stone plunges endlessly downward.",
 options:[
-{label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain +1 Relic. Next World Boss gains +10 HP."},
-{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards (shared). Spawn a World Boss."},
-{label:"Remove the Anchor",tag:"Freedom",effect:"Immediately resolve one threat. Spawn 2 Creatures."}
+{label:"Reinforce",tag:"Order",effect:"All factions gain 1 Relic."},
+{label:"Damage",tag:"Profit",effect:"Spawn a World Boss."}
 ]
 },
 
 {
 title:"The Shared Grave ⚖️",
-text:"Every banner ever raised hangs here, torn and impossible.",
+text:"Every banner ever raised hangs here.",
 options:[
-{label:"Honor the Fallen",tag:"Reverence",effect:"All factions gain 1 Mythic Potion. Resurrection costs increase."},
-{label:"Loot the Dead",tag:"Desecration",effect:"Each faction gains 1 Chest Card. All unit deaths heal Creatures 3 HP."},
-{label:"Burn the Banners",tag:"Defiance",effect:"Cancel one future faction-wide penalty."}
+{label:"Honor the Fallen",tag:"Reverence",effect:"All factions gain 1 Mythic Potion."},
+{label:"Loot the Dead",tag:"Desecration",effect:"Each faction gains 1 Chest Card."}
 ]
 },
 
@@ -239,199 +233,8 @@ options:[
 title:"The Silent Contract ⚖️",
 text:"A stone table waits for signatures.",
 options:[
-{label:"Sign Together",tag:"Alliance",effect:"Once this campaign, factions may ignore hostility."},
-{label:"Refuse",tag:"Independence",effect:"Gain 2 Legendary Potions per faction. Diplomacy weakened this mission."},
-{label:"One Signs Alone",tag:"Betrayal",effect:"That faction gains +20 Metal. All others gain bounty on them."}
-]
-},
-
-{
-title:"The Hunger Beneath Empires ⚖️",
-text:"The earth pulses. It feeds on excess.",
-options:[
-{label:"Feed It",tag:"Appeasement",effect:"Sacrifice resources each cycle. Prevent catastrophe."},
-{label:"Starve It",tag:"Greed",effect:"All factions gain +15 Gold."},
-{label:"Kill It",tag:"Reckoning",effect:"Roll table-wide. Success: gain Blueprint each. Failure: each faction loses 2 units."}
-]
-},
-
-{
-title:"The Last Descent ⚖️",
-text:"It offers no choice. Only reflection.",
-options:[
-{label:"Accept Judgment",tag:"Judgment",effect:"Strongest faction loses 2 units. Others gain +2 Dragon Coins."}
-]
-},
-
-{
-title:"The First Betrayal",
-text:"A future betrayal is revealed in fragments.",
-options:[
-{label:"Name the Traitor",tag:"Fracture",effect:"Chosen faction gains 3 Potions and becomes hostile to all."},
-{label:"Deny the Vision",tag:"Denial",effect:"Cancel one future Table Cave. Presence permanently +1."}
-]
-},
-
-{
-title:"The Fractured Alliance",
-text:"A pact cracks under unseen strain.",
-options:[
-{label:"Resolve the Pact",tag:"Division",effect:"Each faction secretly chooses Bind or Break. Breakers steal 10 Gold from Binders. If majority Break, spawn Betrayal Avatar."}
-]
-},
-
-{
-title:"The Resource War",
-text:"Scarcity breeds aggression.",
-options:[
-{label:"Resolve Conflict",tag:"Greed",effect:"Each faction secretly chooses Hoard, Share, or Seize. If 2+ Seize, spawn Conflict Beast."}
-]
-},
-
-{
-title:"The Tithe of Power",
-text:"The world demands sacrifice.",
-options:[
-{label:"Pay the Tithe",tag:"Sacrifice",effect:"Each faction chooses Sacrifice Unit, 15 Gold, or Refuse. If none sacrifice, spawn World Devourer."}
-]
-},
-
-{
-title:"The Ascension Offer",
-text:"One faction may rise above the rest.",
-options:[
-{label:"Cast Votes",tag:"Ambition",effect:"Vote secretly. Winner gains +2 Dragon Coins. Voters gain +10 Gold."}
-]
-},
-
-{
-title:"The Shared Burden",
-text:"A disaster looms unless wealth is given.",
-options:[
-{label:"Contribute Gold",tag:"Responsibility",effect:"Secretly contribute Gold. If total ≥50, all contributors gain Relic. Otherwise spawn Cataclysm Titan."}
-]
-},
-
-{
-title:"The Claiming",
-text:"A central POI destabilizes.",
-options:[
-{label:"Bid Food",tag:"Dominion",effect:"Highest bid claims POI and gains +2 Dragon Coins. Tie spawns Claimant Beast."}
-]
-},
-
-{
-title:"The Shadow Exchange",
-text:"Secrets are traded in darkness.",
-options:[
-{label:"Trade or Sabotage",tag:"Intrigue",effect:"Secret choice. Mutual Trade: both gain Relic. Mutual Sabotage: spawn Shadow Hunter."}
-]
-},
-
-{
-title:"The Final Rift",
-text:"The world fractures further.",
-options:[
-{label:"Choose Direction",tag:"Rift",effect:"Each faction chooses Fortify, Expand, or Exploit. 2+ Exploit spawns Greater Rift Beast."}
-]
-},
-
-{
-title:"The Reckoning Vote",
-text:"Judgment must fall.",
-options:[
-{label:"Cast Judgment",tag:"Condemnation",effect:"Most voted faction loses 1 Dragon Coin and 1 unit."}
-]
-},
-
-{
-title:"The World Decides",
-text:"Alignment is declared.",
-options:[
-{label:"Declare Alignment",tag:"Ideology",effect:"Majority alignment gains +1 Dragon Coin. Minority spawn Ideological Creature. If tied, Presence +3."}
-]
-},
-
-{
-title:"The Black Mirror Crevasse",
-text:"Intentions reflect as weapons.",
-options:[
-{label:"Ally or Betray",tag:"Reflection",effect:"Secretly choose Ally or Betray. 2+ Betray spawns keyword-hunter."}
-]
-},
-
-{
-title:"The Gnawing Deep",
-text:"Something feeds below.",
-options:[
-{label:"Feed or Starve",tag:"Hunger",effect:"Starvers lose 1 unit. Feeders gain +2 Dragon Coin if someone starved."}
-]
-},
-
-{
-title:"The Echoing Pit of Oaths",
-text:"Ancient promises return.",
-options:[
-{label:"Honor or Break",tag:"Oathfall",effect:"Breakers spawn Oathbreaker Behemoth targeting Honoring factions."}
-]
-},
-
-{
-title:"The Vein of Living Metal",
-text:"Metal pulses at the map center.",
-options:[
-{label:"Contribute Metal",tag:"Extraction",effect:"Highest contributor gains +2 Blueprints. 0 contributors gain Scavenger."}
-]
-},
-
-{
-title:"The Throneless Hollow",
-text:"No ruler survives here.",
-options:[
-{label:"Offer Commander",tag:"Sacrifice",effect:"Remove Commander, gain +2 Dragon Coins."},
-{label:"Protect Commander",tag:"Defiance",effect:"All others may attack Commander freely."}
-]
-},
-
-{
-title:"The Map Is Redrawn",
-text:"Paths collapse and reform.",
-options:[
-{label:"Stabilize",tag:"Stability",effect:"All factions gain +5 Food."},
-{label:"Let It Shift",tag:"Upheaval",effect:"Replace central terrain. Leader gains +1 Dragon Coin."}
-]
-},
-
-{
-title:"The Champion Calls",
-text:"An arena challenge rings out.",
-options:[
-{label:"Commit or Decline",tag:"Glory",effect:"2+ Commit spawns Arena Champion. Winner +3 Dragon Coins."}
-]
-},
-
-{
-title:"The Council Convenes",
-text:"Commanders gather.",
-options:[
-{label:"Send Commander",tag:"Politics",effect:"Most Commanders gains 1 Blueprint. Others gain Potion."}
-]
-},
-
-{
-title:"Rumours of Betrayal",
-text:"Suspicion spreads.",
-options:[
-{label:"Investigate",tag:"Suspicion",effect:"Chosen faction reveals reserves or spawns keyword hunter."}
-]
-},
-
-{
-title:"The Storm Breaks",
-text:"The sky revolts.",
-options:[
-{label:"Seek Shelter",tag:"Shelter",effect:"Skip 1 round. No spawns."},
-{label:"Press On",tag:"Defiance",effect:"Ignore terrain penalties. Spawn Stormward Avatar."}
+{label:"Sign Together",tag:"Alliance",effect:"Ignore hostility once this campaign."},
+{label:"Refuse",tag:"Independence",effect:"Gain 2 Legendary Potions."}
 ]
 },
 
@@ -442,120 +245,30 @@ options:[
 {label:"United Circle",tag:"Unity",effect:"Contribute 5 Food each. Banish threats."},
 {label:"Reckless Stand",tag:"Blood",effect:"Gain +20 Gold. Spawn Table Beast."}
 ]
-}],
+}
+
+],
 act2:[],
 act3:[]
 };
 
-/* ===== ACT SWITCH ===== */
+/* ACT SWITCH */
 
 function switchAct(){
 let newAct=document.getElementById("actSelector").value;
 if(newAct===currentAct)return;
 
-if(!confirm("Switching Acts resets Tension and World Events. Continue?")){
+if(!confirm("Switching Acts resets Tension. Continue?")){
 document.getElementById("actSelector").value=currentAct;
 return;
 }
 
 currentAct=newAct;
 resetTension();
-usedEventsByAct[currentAct]=[];
-addLog("Switched to "+currentAct.toUpperCase()+".");
+addLog("Switched to "+currentAct.toUpperCase());
 }
 
-/* ===== PRESENCE ===== */
-
-function updatePresence(){
-document.getElementById("presenceValue").innerText=presence;
-
-let percent=Math.min((presence/15)*100,100);
-let fill=document.getElementById("presenceFill");
-fill.style.width=percent+"%";
-
-if(presence<=2)fill.style.background="#1abc9c";
-else if(presence<=4)fill.style.background="#2ecc71";
-else if(presence<=6)fill.style.background="#f1c40f";
-else if(presence<=8)fill.style.background="#e67e22";
-else if(presence<=10)fill.style.background="#e74c3c";
-else fill.style.background="#8b0000";
-
-let tier="0–2";
-if(presence>=3&&presence<=4)tier="3–4";
-if(presence>=5&&presence<=6)tier="5–6";
-if(presence>=7&&presence<=8)tier="7–8";
-if(presence>=9&&presence<=10)tier="9–10";
-if(presence>=11&&presence<=12)tier="11–12";
-if(presence>=13)tier="13–15";
-
-document.getElementById("presenceTier").innerText=tier;
-}
-
-function changePresence(v){
-presence+=v;
-if(presence<0)presence=0;
-updatePresence();
-}
-
-function resetPresence(){
-presence=0;
-updatePresence();
-}
-
-/* ===== TENSION ===== */
-
-function getThreshold(){
-if(weCount<5)return 4;
-if(weCount<10)return 3;
-return 2;
-}
-
-function getTensionColor(){
-if(tension<10)return"#1abc9c";
-if(tension<20)return"#2ecc71";
-if(tension<30)return"#f1c40f";
-if(tension<40)return"#e67e22";
-if(tension<60)return"#e74c3c";
-return"#8b0000";
-}
-
-function increaseTension(){
-tension++;tensionSinceLastWE++;
-document.getElementById("tensionValue").innerText=tension;
-
-let color=getTensionColor();
-let box=document.createElement("div");
-box.className="tensionBox";
-box.style.background=color;
-tensionRow.appendChild(box);
-
-if(tensionSinceLastWE>=getThreshold()){
-let slot=document.createElement("div");
-slot.className="weSlot";
-slot.style.background=color;
-weGrid.appendChild(slot);
-weCount++;tensionSinceLastWE=0;
-document.getElementById("weCount").innerText=weCount;
-drawWorldEvent();
-}
-}
-
-function decreaseTension(){
-if(tension<=0)return;
-tension--;
-tensionRow.removeChild(tensionRow.lastChild);
-document.getElementById("tensionValue").innerText=tension;
-}
-
-function resetTension(){
-tension=0;weCount=0;tensionSinceLastWE=0;
-tensionRow.innerHTML="";
-weGrid.innerHTML="";
-document.getElementById("tensionValue").innerText=0;
-document.getElementById("weCount").innerText=0;
-}
-
-/* ===== WORLD EVENT ENGINE ===== */
+/* WORLD EVENT DRAW */
 
 function drawWorldEvent(){
 let pool=worldEventPools[currentAct];
@@ -572,10 +285,10 @@ used=[];
 }
 
 let available=pool.filter((_,i)=>!used.includes(i));
-let index=Math.floor(Math.random()*available.length);
-let eventIndex=pool.indexOf(available[index]);
-used.push(eventIndex);
+let randomIndex=Math.floor(Math.random()*available.length);
+let eventIndex=pool.indexOf(available[randomIndex]);
 
+used.push(eventIndex);
 openEventModal(pool[eventIndex]);
 }
 
@@ -615,7 +328,77 @@ addLog(selectedEventTitle+" — "+selectedTag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* ===== LOG ===== */
+/* TENSION */
+
+function getThreshold(){
+if(weCount<5)return 4;
+if(weCount<10)return 3;
+return 2;
+}
+
+function increaseTension(){
+tension++;tensionSinceLastWE++;
+document.getElementById("tensionValue").innerText=tension;
+
+let box=document.createElement("div");
+box.className="tensionBox";
+box.style.background="#e74c3c";
+tensionRow.appendChild(box);
+
+if(tensionSinceLastWE>=getThreshold()){
+let slot=document.createElement("div");
+slot.className="weSlot";
+slot.style.background="#e74c3c";
+weGrid.appendChild(slot);
+weCount++;tensionSinceLastWE=0;
+document.getElementById("weCount").innerText=weCount;
+drawWorldEvent();
+}
+}
+
+function decreaseTension(){
+if(tension<=0)return;
+tension--;
+tensionRow.removeChild(tensionRow.lastChild);
+document.getElementById("tensionValue").innerText=tension;
+}
+
+function resetTension(){
+tension=0;weCount=0;tensionSinceLastWE=0;
+tensionRow.innerHTML="";
+weGrid.innerHTML="";
+document.getElementById("tensionValue").innerText=0;
+document.getElementById("weCount").innerText=0;
+}
+
+/* PRESENCE */
+
+function updatePresence(){
+document.getElementById("presenceValue").innerText=presence;
+let percent=Math.min((presence/15)*100,100);
+let fill=document.getElementById("presenceFill");
+fill.style.width=percent+"%";
+
+if(presence<=2)fill.style.background="#1abc9c";
+else if(presence<=4)fill.style.background="#2ecc71";
+else if(presence<=6)fill.style.background="#f1c40f";
+else if(presence<=8)fill.style.background="#e67e22";
+else if(presence<=10)fill.style.background="#e74c3c";
+else fill.style.background="#8b0000";
+}
+
+function changePresence(v){
+presence+=v;
+if(presence<0)presence=0;
+updatePresence();
+}
+
+function resetPresence(){
+presence=0;
+updatePresence();
+}
+
+/* LOG */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
@@ -635,12 +418,12 @@ c.appendChild(d);
 
 function clearLog(){logEntries=[];renderLog();}
 
-/* ===== SAVE / LOAD ===== */
+/* SAVE */
 
 function saveCampaign(){
 let slot=document.getElementById("saveSlot").value;
 localStorage.setItem(slot,JSON.stringify({
-tension,weCount,tensionSinceLastWE,presence,logEntries,currentAct,usedEventsByAct
+tension,weCount,tensionSinceLastWE,presence,currentAct
 }));
 alert("Saved.");
 }
@@ -655,16 +438,13 @@ tension=state.tension||0;
 weCount=state.weCount||0;
 tensionSinceLastWE=state.tensionSinceLastWE||0;
 presence=state.presence||0;
-logEntries=state.logEntries||[];
 currentAct=state.currentAct||"act1";
-usedEventsByAct=state.usedEventsByAct||{act1:[],act2:[],act3:[]};
 
 document.getElementById("actSelector").value=currentAct;
 
 resetTension();
 for(let i=0;i<tension;i++)increaseTension();
 updatePresence();
-renderLog();
 }
 
 function newCampaign(){
@@ -672,28 +452,6 @@ if(!confirm("Start new campaign?"))return;
 resetTension();
 resetPresence();
 clearLog();
-}
-
-function exportCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data)return;
-let blob=new Blob([data],{type:"application/json"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="campaign.json";
-a.click();
-}
-
-function importCampaign(e){
-let file=e.target.files[0];
-if(!file)return;
-let reader=new FileReader();
-reader.onload=function(){
-localStorage.setItem(document.getElementById("saveSlot").value,reader.result);
-alert("Imported.");
-};
-reader.readAsText(file);
 }
 
 updatePresence();
