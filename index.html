@@ -217,13 +217,232 @@ const worldEventPools={
 act1:[
 {
 title:"The World Anchor ⚖️",
-text:"A titanic spike of stone plunges endlessly downward.",
+text:"A titanic spike of stone plunges endlessly downward. Runes spiral across its surface.",
 options:[
-{label:"Reinforce",tag:"Order",effect:"All factions gain 1 Relic."},
-{label:"Damage",tag:"Profit",effect:"Spawn a World Boss."}
+{label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain +1 Relic. Next World Boss gains +10 HP."},
+{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards (shared). Spawn a World Boss."},
+{label:"Remove the Anchor",tag:"Freedom",effect:"Immediately resolve one threat. Spawn 2 Creatures."}
 ]
-}
-],
+},
+
+{
+title:"The Shared Grave ⚖️",
+text:"Every banner ever raised hangs here, torn and impossible.",
+options:[
+{label:"Honor the Fallen",tag:"Reverence",effect:"All factions gain 1 Mythic Potion. Resurrection costs increase."},
+{label:"Loot the Dead",tag:"Desecration",effect:"Each faction gains 1 Chest Card. All unit deaths heal Creatures 3 HP."},
+{label:"Burn the Banners",tag:"Defiance",effect:"Cancel one future faction-wide penalty."}
+]
+},
+
+{
+title:"The Silent Contract ⚖️",
+text:"A stone table waits for signatures.",
+options:[
+{label:"Sign Together",tag:"Alliance",effect:"Once this campaign, factions may ignore hostility."},
+{label:"Refuse",tag:"Independence",effect:"Gain 2 Legendary Potions per faction. Diplomacy weakened this mission."},
+{label:"One Signs Alone",tag:"Betrayal",effect:"That faction gains +20 Metal. All others gain bounty on them."}
+]
+},
+
+{
+title:"The Hunger Beneath Empires ⚖️",
+text:"The earth pulses. It feeds on excess.",
+options:[
+{label:"Feed It",tag:"Appeasement",effect:"Sacrifice resources each cycle. Prevent catastrophe."},
+{label:"Starve It",tag:"Greed",effect:"All factions gain +15 Gold."},
+{label:"Kill It",tag:"Reckoning",effect:"Roll table-wide. Success: gain Blueprint each. Failure: each faction loses 2 units."}
+]
+},
+
+{
+title:"The Last Descent ⚖️",
+text:"It offers no choice. Only reflection.",
+options:[
+{label:"Accept Judgment",tag:"Judgment",effect:"Strongest faction loses 2 units. Others gain +2 Dragon Coins."}
+]
+},
+
+{
+title:"The First Betrayal",
+text:"A future betrayal is revealed in fragments.",
+options:[
+{label:"Name the Traitor",tag:"Fracture",effect:"Chosen faction gains 3 Potions and becomes hostile to all."},
+{label:"Deny the Vision",tag:"Denial",effect:"Cancel one future Table Cave. Presence permanently +1."}
+]
+},
+
+{
+title:"The Fractured Alliance",
+text:"A pact cracks under unseen strain.",
+options:[
+{label:"Resolve the Pact",tag:"Division",effect:"Each faction secretly chooses Bind or Break. Breakers steal 10 Gold from Binders. If majority Break, spawn Betrayal Avatar."}
+]
+},
+
+{
+title:"The Resource War",
+text:"Scarcity breeds aggression.",
+options:[
+{label:"Resolve Conflict",tag:"Greed",effect:"Each faction secretly chooses Hoard, Share, or Seize. If 2+ Seize, spawn Conflict Beast."}
+]
+},
+
+{
+title:"The Tithe of Power",
+text:"The world demands sacrifice.",
+options:[
+{label:"Pay the Tithe",tag:"Sacrifice",effect:"Each faction chooses Sacrifice Unit, 15 Gold, or Refuse. If none sacrifice, spawn World Devourer."}
+]
+},
+
+{
+title:"The Ascension Offer",
+text:"One faction may rise above the rest.",
+options:[
+{label:"Cast Votes",tag:"Ambition",effect:"Vote secretly. Winner gains +2 Dragon Coins. Voters gain +10 Gold."}
+]
+},
+
+{
+title:"The Shared Burden",
+text:"A disaster looms unless wealth is given.",
+options:[
+{label:"Contribute Gold",tag:"Responsibility",effect:"Secretly contribute Gold. If total ≥50, all contributors gain Relic. Otherwise spawn Cataclysm Titan."}
+]
+},
+
+{
+title:"The Claiming",
+text:"A central POI destabilizes.",
+options:[
+{label:"Bid Food",tag:"Dominion",effect:"Highest bid claims POI and gains +2 Dragon Coins. Tie spawns Claimant Beast."}
+]
+},
+
+{
+title:"The Shadow Exchange",
+text:"Secrets are traded in darkness.",
+options:[
+{label:"Trade or Sabotage",tag:"Intrigue",effect:"Secret choice. Mutual Trade: both gain Relic. Mutual Sabotage: spawn Shadow Hunter."}
+]
+},
+
+{
+title:"The Final Rift",
+text:"The world fractures further.",
+options:[
+{label:"Choose Direction",tag:"Rift",effect:"Each faction chooses Fortify, Expand, or Exploit. 2+ Exploit spawns Greater Rift Beast."}
+]
+},
+
+{
+title:"The Reckoning Vote",
+text:"Judgment must fall.",
+options:[
+{label:"Cast Judgment",tag:"Condemnation",effect:"Most voted faction loses 1 Dragon Coin and 1 unit."}
+]
+},
+
+{
+title:"The World Decides",
+text:"Alignment is declared.",
+options:[
+{label:"Declare Alignment",tag:"Ideology",effect:"Majority alignment gains +1 Dragon Coin. Minority spawn Ideological Creature. If tied, Presence +3."}
+]
+},
+
+{
+title:"The Black Mirror Crevasse",
+text:"Intentions reflect as weapons.",
+options:[
+{label:"Ally or Betray",tag:"Reflection",effect:"Secretly choose Ally or Betray. 2+ Betray spawns keyword-hunter."}
+]
+},
+
+{
+title:"The Gnawing Deep",
+text:"Something feeds below.",
+options:[
+{label:"Feed or Starve",tag:"Hunger",effect:"Starvers lose 1 unit. Feeders gain +2 Dragon Coin if someone starved."}
+]
+},
+
+{
+title:"The Echoing Pit of Oaths",
+text:"Ancient promises return.",
+options:[
+{label:"Honor or Break",tag:"Oathfall",effect:"Breakers spawn Oathbreaker Behemoth targeting Honoring factions."}
+]
+},
+
+{
+title:"The Vein of Living Metal",
+text:"Metal pulses at the map center.",
+options:[
+{label:"Contribute Metal",tag:"Extraction",effect:"Highest contributor gains +2 Blueprints. 0 contributors gain Scavenger."}
+]
+},
+
+{
+title:"The Throneless Hollow",
+text:"No ruler survives here.",
+options:[
+{label:"Offer Commander",tag:"Sacrifice",effect:"Remove Commander, gain +2 Dragon Coins."},
+{label:"Protect Commander",tag:"Defiance",effect:"All others may attack Commander freely."}
+]
+},
+
+{
+title:"The Map Is Redrawn",
+text:"Paths collapse and reform.",
+options:[
+{label:"Stabilize",tag:"Stability",effect:"All factions gain +5 Food."},
+{label:"Let It Shift",tag:"Upheaval",effect:"Replace central terrain. Leader gains +1 Dragon Coin."}
+]
+},
+
+{
+title:"The Champion Calls",
+text:"An arena challenge rings out.",
+options:[
+{label:"Commit or Decline",tag:"Glory",effect:"2+ Commit spawns Arena Champion. Winner +3 Dragon Coins."}
+]
+},
+
+{
+title:"The Council Convenes",
+text:"Commanders gather.",
+options:[
+{label:"Send Commander",tag:"Politics",effect:"Most Commanders gains 1 Blueprint. Others gain Potion."}
+]
+},
+
+{
+title:"Rumours of Betrayal",
+text:"Suspicion spreads.",
+options:[
+{label:"Investigate",tag:"Suspicion",effect:"Chosen faction reveals reserves or spawns keyword hunter."}
+]
+},
+
+{
+title:"The Storm Breaks",
+text:"The sky revolts.",
+options:[
+{label:"Seek Shelter",tag:"Shelter",effect:"Skip 1 round. No spawns."},
+{label:"Press On",tag:"Defiance",effect:"Ignore terrain penalties. Spawn Stormward Avatar."}
+]
+},
+
+{
+title:"The Blood Moon Ascends",
+text:"The red moon rises.",
+options:[
+{label:"United Circle",tag:"Unity",effect:"Contribute 5 Food each. Banish threats."},
+{label:"Reckless Stand",tag:"Blood",effect:"Gain +20 Gold. Spawn Table Beast."}
+]
+}],
 act2:[],
 act3:[]
 };
