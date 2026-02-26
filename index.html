@@ -56,7 +56,6 @@ button, select, input{
 
 .weSlot{
     height:35px;
-    background:#222;
     border-radius:4px;
 }
 
@@ -70,7 +69,6 @@ button, select, input{
 #presenceFill{
     height:100%;
     width:0%;
-    background:#e74c3c;
     transition:.3s;
 }
 
@@ -129,8 +127,6 @@ button, select, input{
 <h1>WORLD FRACTURE</h1>
 
 <div class="section">
-<select id="saveSlot"></select>
-<input type="text" id="campaignNameInput" placeholder="Campaign Name">
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
 </div>
@@ -168,6 +164,7 @@ button, select, input{
 <div class="section">
 <h2>Cave Log</h2>
 <div id="logContainer"></div>
+<button onclick="clearLog()">Clear Log</button>
 </div>
 
 <div class="modal" id="eventModal">
@@ -191,13 +188,26 @@ const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
 const actSelector=document.getElementById("actSelector");
 
+/* ================== EVENT POOLS ================== */
+
 const worldEventPools={
-act1:[ /* YOUR 45 EVENTS */ ],
+act1:[ /* PASTE YOUR 45 ACT I EVENTS HERE */ ],
 act2:[],
 act3:[]
 };
 
-/* -------- ACT SWITCH -------- */
+/* ================== COLORS ================== */
+
+function getTensionColor(){
+if(tension<10) return "#1abc9c";
+if(tension<20) return "#2ecc71";
+if(tension<30) return "#f1c40f";
+if(tension<40) return "#e67e22";
+if(tension<60) return "#e74c3c";
+return "#8b0000";
+}
+
+/* ================== ACT SWITCH ================== */
 
 function attemptActChange(){
 let newAct=actSelector.value;
@@ -214,15 +224,23 @@ usedEventsByAct[currentAct]=[];
 addLog("Transitioned to "+actSelector.options[actSelector.selectedIndex].text+".");
 }
 
-/* -------- TENSION -------- */
+/* ================== TENSION ================== */
 
 function increaseTension(){
 tension++;
 tensionSinceLastWE++;
+
+let color=getTensionColor();
+
+let box=document.createElement("div");
+box.className="tensionBox";
+box.style.background=color;
+tensionRow.appendChild(box);
+
 updateTensionUI();
 
 if(tensionSinceLastWE>=4){
-createWESlot();
+createWESlot(color);
 tensionSinceLastWE=0;
 drawWorldEvent();
 }
@@ -249,15 +267,16 @@ function updateTensionUI(){
 document.getElementById("tensionValue").innerText=tension;
 }
 
-function createWESlot(){
+function createWESlot(color){
 let slot=document.createElement("div");
 slot.className="weSlot";
+slot.style.background=color;
 weGrid.appendChild(slot);
 weCount++;
 document.getElementById("weCount").innerText=weCount;
 }
 
-/* -------- PRESENCE -------- */
+/* ================== PRESENCE ================== */
 
 function changePresence(v){
 presence+=v;
@@ -273,14 +292,22 @@ updatePresenceUI();
 function updatePresenceUI(){
 document.getElementById("presenceValue").innerText=presence;
 let percent=Math.min((presence/15)*100,100);
-document.getElementById("presenceFill").style.width=percent+"%";
+let fill=document.getElementById("presenceFill");
+fill.style.width=percent+"%";
+
+if(presence<=2) fill.style.background="#1abc9c";
+else if(presence<=4) fill.style.background="#2ecc71";
+else if(presence<=6) fill.style.background="#f1c40f";
+else if(presence<=8) fill.style.background="#e67e22";
+else if(presence<=10) fill.style.background="#e74c3c";
+else fill.style.background="#8b0000";
 }
 
-/* -------- DRAW -------- */
+/* ================== DRAW ================== */
 
 function drawWorldEvent(){
 let pool=worldEventPools[currentAct];
-if(!pool || pool.length===0){
+if(!pool||pool.length===0){
 addLog("No World Events in this Act yet.");
 return;
 }
@@ -299,7 +326,7 @@ used.push(eventIndex);
 openEventModal(pool[eventIndex]);
 }
 
-/* -------- MODAL -------- */
+/* ================== MODAL ================== */
 
 function openEventModal(event){
 selectedEventTitle=event.title;
@@ -337,7 +364,7 @@ addLog(selectedEventTitle+" — "+selectedTag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* -------- LOG -------- */
+/* ================== LOG ================== */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
@@ -355,7 +382,12 @@ c.appendChild(d);
 });
 }
 
-/* -------- SAVE / LOAD -------- */
+function clearLog(){
+logEntries=[];
+renderLog();
+}
+
+/* ================== SAVE / LOAD ================== */
 
 function saveCampaign(){
 localStorage.setItem("campaignData",JSON.stringify({
