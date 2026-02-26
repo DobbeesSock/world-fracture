@@ -686,6 +686,7 @@ document.getElementById("eventModal").style.display="none";
 /* TENSION */
 
 function increaseTension(){
+
   tension++;
   tensionSinceLastWE++;
 
@@ -696,28 +697,21 @@ function increaseTension(){
   box.style.background="#e74c3c";
   tensionRow.appendChild(box);
 
-  if(tensionSinceLastWE >= getThreshold()){
-    const slot=document.createElement("div");
+  const threshold = getThreshold();
+
+  if(tensionSinceLastWE >= threshold){
+
+    tensionSinceLastWE = 0;
+
+    const slot = document.createElement("div");
     slot.className="weSlot";
     slot.style.background="#e74c3c";
     weGrid.appendChild(slot);
 
     weCount++;
-    tensionSinceLastWE=0;
-
     document.getElementById("weCount").textContent = weCount;
+
     drawWorldEvent();
-  }
-}
-
-function decreaseTension(){
-  if(tension <= 0) return;
-
-  tension--;
-  document.getElementById("tensionValue").textContent = tension;
-
-  if(tensionRow.lastChild){
-    tensionRow.removeChild(tensionRow.lastChild);
   }
 }
 
