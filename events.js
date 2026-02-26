@@ -1,5 +1,4 @@
 const worldEventPools = {
-
   act1: [
     {
       title: "The World Anchor ⚖️",
@@ -17,28 +16,5 @@ const worldEventPools = {
         {label:"Refuse",tag:"Independence"}
       ]
     }
-  ],
-
-  act2: [
-    {
-      title: "The Sky Cracks Open",
-      text: "Something descends from beyond.",
-      options: [
-        {label:"Stand Firm",tag:"Defiance"},
-        {label:"Retreat",tag:"Caution"}
-      ]
-    }
-  ],
-
-  act3: [
-    {
-      title: "The Final Reckoning",
-      text: "The world demands an ending.",
-      options: [
-        {label:"Accept Fate",tag:"End"},
-        {label:"Rewrite Destiny",tag:"Chaos"}
-      ]
-    }
   ]
-
 };
