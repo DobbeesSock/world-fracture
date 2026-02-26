@@ -136,7 +136,7 @@ button, select, input{
 
 <div class="section">
 <h2>Current Act</h2>
-<select id="actSelector" onchange="changeAct()">
+<select id="actSelector" onchange="attemptActChange()">
 <option value="act1">Act I</option>
 <option value="act2">Act II</option>
 <option value="act3">Act III</option>
@@ -185,18 +185,46 @@ let selectedEventTitle="",selectedTag="";
 
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
+const actSelector=document.getElementById("actSelector");
 
 const worldEventPools={
-act1:[ /* YOUR 45 ACT I EVENTS STAY HERE — unchanged */ ],
+act1:[ /* YOUR 45 ACT I EVENTS HERE */ ],
 act2:[],
 act3:[]
 };
 
-/* -------- ACT SWITCH -------- */
+/* -------- ACT SWITCH WITH CONFIRM -------- */
 
-function changeAct(){
-currentAct=document.getElementById("actSelector").value;
-addLog("Switched to "+currentAct.toUpperCase()+".");
+function attemptActChange(){
+let newAct=actSelector.value;
+
+if(newAct===currentAct) return;
+
+let confirmSwitch=confirm(
+"Switching Acts will reset Tension and clear World Events.\nContinue?"
+);
+
+if(!confirmSwitch){
+actSelector.value=currentAct;
+return;
+}
+
+currentAct=newAct;
+
+// Reset tension & WE
+tension=0;
+weCount=0;
+tensionSinceLastWE=0;
+
+tensionRow.innerHTML="";
+weGrid.innerHTML="";
+document.getElementById("tensionValue").innerText=0;
+document.getElementById("weCount").innerText=0;
+
+// Reset used events for this act
+usedEventsByAct[currentAct]=[];
+
+addLog("Transitioned to "+actSelector.options[actSelector.selectedIndex].text+".");
 }
 
 /* -------- DRAW -------- */
@@ -209,6 +237,7 @@ return;
 }
 
 let used=usedEventsByAct[currentAct];
+
 if(used.length===pool.length){
 usedEventsByAct[currentAct]=[];
 used=[];
@@ -266,6 +295,8 @@ function increaseTension(){
 tension++;
 tensionSinceLastWE++;
 
+document.getElementById("tensionValue").innerText=tension;
+
 let box=document.createElement("div");
 box.className="tensionBox";
 box.style.background="#e74c3c";
@@ -276,6 +307,7 @@ let slot=document.createElement("div");
 slot.className="weSlot";
 weGrid.appendChild(slot);
 weCount++;
+document.getElementById("weCount").innerText=weCount;
 tensionSinceLastWE=0;
 drawWorldEvent();
 }
@@ -327,7 +359,10 @@ presence=state.presence;
 logEntries=state.logEntries||[];
 usedEventsByAct=state.usedEventsByAct||{act1:[],act2:[],act3:[]};
 currentAct=state.currentAct||"act1";
-document.getElementById("actSelector").value=currentAct;
+actSelector.value=currentAct;
+document.getElementById("tensionValue").innerText=tension;
+document.getElementById("weCount").innerText=weCount;
+document.getElementById("presenceValue").innerText=presence;
 renderLog();
 }
 
