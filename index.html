@@ -27,6 +27,28 @@ button, select{
     color:#e6d3a3;
     cursor:pointer;
 }
+#tensionRow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+    justify-content:center;
+}
+.tensionBox{
+    width:20px;
+    height:20px;
+    border-radius:4px;
+    background:#e74c3c;
+}
+#weGrid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+.weSlot{
+    height:35px;
+    border-radius:4px;
+    background:#e74c3c;
+}
 #presenceBar{
     height:16px;
     width:100%;
@@ -53,6 +75,7 @@ button, select{
     border-radius:10px;
     width:90%;
     max-width:500px;
+    text-align:left;
 }
 </style>
 </head>
@@ -62,8 +85,14 @@ button, select{
 
 <!-- SAVE -->
 <div class="section">
+<select id="saveSlot">
+<option value="slot1">Campaign Slot 1</option>
+<option value="slot2">Campaign Slot 2</option>
+<option value="slot3">Campaign Slot 3</option>
+</select>
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
+<button onclick="newCampaign()">New</button>
 </div>
 
 <!-- ACT -->
@@ -79,8 +108,17 @@ button, select{
 <!-- TENSION -->
 <div class="section">
 <h2>Tension: <span id="tensionValue">0</span></h2>
+<div id="tensionRow"></div>
 <button onclick="increaseTension()">+Tension</button>
+<button onclick="decreaseTension()">-Tension</button>
+<button onclick="resetTension()">Reset</button>
 <button onclick="drawWorldEvent()">Force Event</button>
+</div>
+
+<!-- WORLD EVENTS -->
+<div class="section">
+<h2>World Events: <span id="weCount">0</span></h2>
+<div id="weGrid"></div>
 </div>
 
 <!-- PRESENCE -->
@@ -89,8 +127,10 @@ button, select{
 <div id="presenceBar">
 <div id="presenceFill"></div>
 </div>
+<div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
+<button onclick="resetPresence()">Reset</button>
 </div>
 
 <!-- MODAL -->
@@ -102,143 +142,197 @@ button, select{
 </div>
 </div>
 
-<!-- LOAD EVENTS -->
 <script src="events.js"></script>
 
 <script>
 
 /* ================= STATE ================= */
 
-let tension = 0;
-let weCount = 0;
-let presence = 0;
-let currentAct = "act1";
-
-let usedEventsByAct = {
-  act1: [],
-  act2: [],
-  act3: []
-};
+let tension=0;
+let tensionSinceLastWE=0;
+let weCount=0;
+let presence=0;
+let currentAct="act1";
+let usedEventsByAct={act1:[],act2:[],act3:[]};
 
 /* ================= ACT ================= */
 
 function switchAct(){
-    currentAct = document.getElementById("actSelector").value;
+    currentAct=document.getElementById("actSelector").value;
+    resetTension();
 }
 
 /* ================= TENSION ================= */
 
 function getThreshold(){
-    if(weCount < 5) return 4;
-    if(weCount < 10) return 3;
+    if(weCount<5) return 4;
+    if(weCount<10) return 3;
     return 2;
 }
 
 function increaseTension(){
     tension++;
-    document.getElementById("tensionValue").textContent = tension;
+    tensionSinceLastWE++;
+    document.getElementById("tensionValue").textContent=tension;
 
-    if(tension >= getThreshold()){
-        tension = 0;
+    let box=document.createElement("div");
+    box.className="tensionBox";
+    document.getElementById("tensionRow").appendChild(box);
+
+    if(tensionSinceLastWE>=getThreshold()){
+        tensionSinceLastWE=0;
+
+        let slot=document.createElement("div");
+        slot.className="weSlot";
+        document.getElementById("weGrid").appendChild(slot);
+
         weCount++;
-        document.getElementById("tensionValue").textContent = tension;
+        document.getElementById("weCount").textContent=weCount;
+
         drawWorldEvent();
     }
+}
+
+function decreaseTension(){
+    if(tension<=0) return;
+    tension--;
+    document.getElementById("tensionValue").textContent=tension;
+    let row=document.getElementById("tensionRow");
+    if(row.lastChild) row.removeChild(row.lastChild);
+}
+
+function resetTension(){
+    tension=0;
+    tensionSinceLastWE=0;
+    weCount=0;
+    document.getElementById("tensionRow").innerHTML="";
+    document.getElementById("weGrid").innerHTML="";
+    document.getElementById("tensionValue").textContent=0;
+    document.getElementById("weCount").textContent=0;
 }
 
 /* ================= PRESENCE ================= */
 
 function changePresence(v){
-    presence += v;
-    if(presence < 0) presence = 0;
+    presence+=v;
+    if(presence<0) presence=0;
+    updatePresence();
+}
 
-    document.getElementById("presenceValue").textContent = presence;
+function resetPresence(){
+    presence=0;
+    updatePresence();
+}
 
-    let percent = Math.min((presence/15)*100,100);
-    let fill = document.getElementById("presenceFill");
-    fill.style.width = percent + "%";
+function updatePresence(){
+    document.getElementById("presenceValue").textContent=presence;
+    let fill=document.getElementById("presenceFill");
+    let tier=document.getElementById("presenceTier");
 
-    if(presence <= 2) fill.style.background = "#1abc9c";
-    else if(presence <= 4) fill.style.background = "#2ecc71";
-    else if(presence <= 6) fill.style.background = "#f1c40f";
-    else if(presence <= 8) fill.style.background = "#e67e22";
-    else if(presence <= 10) fill.style.background = "#e74c3c";
-    else fill.style.background = "#8b0000";
+    let percent=Math.min((presence/15)*100,100);
+    fill.style.width=percent+"%";
+
+    if(presence<=2){ fill.style.background="#1abc9c"; tier.textContent="Dormant (0–2)"; }
+    else if(presence<=4){ fill.style.background="#2ecc71"; tier.textContent="Stirring (3–4)"; }
+    else if(presence<=6){ fill.style.background="#f1c40f"; tier.textContent="Unstable (5–6)"; }
+    else if(presence<=8){ fill.style.background="#e67e22"; tier.textContent="Hostile (7–8)"; }
+    else if(presence<=10){ fill.style.background="#e74c3c"; tier.textContent="Critical (9–10)"; }
+    else{ fill.style.background="#8b0000"; tier.textContent="Cataclysm (11+)"; }
 }
 
 /* ================= EVENT DRAW ================= */
 
 function drawWorldEvent(){
 
-    if(typeof worldEventPools === "undefined") return;
+    let pool=worldEventPools[currentAct];
+    if(!pool||pool.length===0) return;
 
-    let pool = worldEventPools[currentAct];
-    if(!pool || pool.length === 0) return;
+    let used=usedEventsByAct[currentAct];
 
-    let used = usedEventsByAct[currentAct];
-
-    if(used.length >= pool.length){
-        usedEventsByAct[currentAct] = [];
-        used = [];
+    if(used.length>=pool.length){
+        usedEventsByAct[currentAct]=[];
+        used=[];
     }
 
-    let available = pool.filter((_,i)=>!used.includes(i));
-    let randomIndex = Math.floor(Math.random() * available.length);
-    let event = available[randomIndex];
+    let available=pool.filter((_,i)=>!used.includes(i));
+    let randomIndex=Math.floor(Math.random()*available.length);
+    let event=available[randomIndex];
 
-    let realIndex = pool.indexOf(event);
+    let realIndex=pool.indexOf(event);
     usedEventsByAct[currentAct].push(realIndex);
 
     openEventModal(event);
 }
 
 function openEventModal(event){
+    document.getElementById("eventTitle").textContent=event.title;
+    document.getElementById("eventText").textContent=event.text;
 
-    document.getElementById("eventTitle").textContent = event.title;
-    document.getElementById("eventText").textContent = event.text;
-
-    let container = document.getElementById("eventOptions");
-    container.innerHTML = "";
+    let container=document.getElementById("eventOptions");
+    container.innerHTML="";
 
     event.options.forEach(o=>{
-        let btn = document.createElement("button");
-        btn.textContent = o.label + " [" + o.tag + "]";
-        btn.onclick = ()=>document.getElementById("eventModal").style.display="none";
+        let btn=document.createElement("button");
+        btn.textContent=o.label+" ["+o.tag+"]";
+        btn.onclick=()=>document.getElementById("eventModal").style.display="none";
         container.appendChild(btn);
     });
 
     document.getElementById("eventModal").style.display="flex";
 }
 
-/* ================= SAVE / LOAD ================= */
+/* ================= SAVE ================= */
 
 function saveCampaign(){
-    localStorage.setItem("wfSave", JSON.stringify({
-        tension,
-        weCount,
-        presence,
-        currentAct,
-        usedEventsByAct
+    let slot=document.getElementById("saveSlot").value;
+    localStorage.setItem(slot,JSON.stringify({
+        tension,weCount,tensionSinceLastWE,presence,currentAct,usedEventsByAct
     }));
 }
 
 function loadCampaign(){
-    let data = localStorage.getItem("wfSave");
+    let slot=document.getElementById("saveSlot").value;
+    let data=localStorage.getItem(slot);
     if(!data) return;
 
-    let state = JSON.parse(data);
+    let state=JSON.parse(data);
 
-    tension = state.tension || 0;
-    weCount = state.weCount || 0;
-    presence = state.presence || 0;
-    currentAct = state.currentAct || "act1";
-    usedEventsByAct = state.usedEventsByAct || usedEventsByAct;
+    tension=state.tension||0;
+    weCount=state.weCount||0;
+    tensionSinceLastWE=state.tensionSinceLastWE||0;
+    presence=state.presence||0;
+    currentAct=state.currentAct||"act1";
+    usedEventsByAct=state.usedEventsByAct||usedEventsByAct;
 
-    document.getElementById("actSelector").value = currentAct;
-    document.getElementById("tensionValue").textContent = tension;
-    document.getElementById("presenceValue").textContent = presence;
-    changePresence(0);
+    document.getElementById("actSelector").value=currentAct;
+    document.getElementById("tensionValue").textContent=tension;
+    document.getElementById("presenceValue").textContent=presence;
+    updatePresence();
+
+    document.getElementById("tensionRow").innerHTML="";
+    document.getElementById("weGrid").innerHTML="";
+    document.getElementById("weCount").textContent=weCount;
+
+    for(let i=0;i<tension;i++){
+        let box=document.createElement("div");
+        box.className="tensionBox";
+        document.getElementById("tensionRow").appendChild(box);
+    }
+
+    for(let i=0;i<weCount;i++){
+        let slotBox=document.createElement("div");
+        slotBox.className="weSlot";
+        document.getElementById("weGrid").appendChild(slotBox);
+    }
 }
+
+function newCampaign(){
+    if(!confirm("Start new campaign?")) return;
+    resetTension();
+    resetPresence();
+}
+
+updatePresence();
 
 </script>
 </body>
