@@ -185,42 +185,22 @@ let selectedEventTitle="",selectedTag="";
 const tensionRow=document.getElementById("tensionRow");
 const weGrid=document.getElementById("weGrid");
 
-/* ================= EVENTS ================= */
+/* ===== Minimal Clean Event Pool ===== */
 
 const worldEventPools={
 act1:[
-
 {
 title:"The World Anchor ⚖️",
 text:"A titanic spike of stone plunges endlessly downward.",
 options:[
 {label:"Reinforce the Anchor",tag:"Order",effect:"All factions gain 1 Relic."},
-{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards and spawn a World Boss."},
-{label:"Remove the Anchor",tag:"Freedom",effect:"Spawn 2 Creatures."}
-]
-},
-
-{
-title:"The Shared Grave ⚖️",
-text:"Banners of every faction hang in ruin.",
-options:[
-{label:"Honor the Dead",tag:"Reverence",effect:"All factions gain 1 Mythic Potion."},
-{label:"Loot the Graves",tag:"Desecration",effect:"Each faction gains 1 Chest Card."}
-]
-},
-
-{
-title:"Market Fluctuation",
-text:"Trade routes tighten then boom.",
-options:[
-{label:"Let Markets Shift",tag:"Prosperity",effect:"Each faction gains +10 Gold."}
+{label:"Damage the Anchor",tag:"Profit",effect:"Gain 3 Chest Cards and spawn a World Boss."}
 ]
 }
-
 ]
 };
 
-/* ================= ENGINE ================= */
+/* ===== WORLD EVENT ENGINE ===== */
 
 function drawWorldEvent(){
 let pool=worldEventPools.act1;
@@ -268,7 +248,7 @@ addLog(selectedEventTitle+" — "+selectedTag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* ================= TENSION ================= */
+/* ===== TENSION ===== */
 
 function getThreshold(){
 if(weCount<5)return 4;
@@ -321,17 +301,22 @@ document.getElementById("tensionValue").innerText=0;
 document.getElementById("weCount").innerText=0;
 }
 
-/* ================= PRESENCE ================= */
+/* ===== PRESENCE ===== */
 
 function changePresence(v){
-presence+=v;if(presence<0)presence=0;
+presence+=v;
+if(presence<0)presence=0;
 updatePresence();
 }
 
-function resetPresence(){presence=0;updatePresence();}
+function resetPresence(){
+presence=0;
+updatePresence();
+}
 
 function updatePresence(){
 document.getElementById("presenceValue").innerText=presence;
+
 let percent=Math.min((presence/15)*100,100);
 let fill=document.getElementById("presenceFill");
 fill.style.width=percent+"%";
@@ -347,7 +332,7 @@ if(presence>=13)tier="13–15";
 document.getElementById("presenceTier").innerText=tier;
 }
 
-/* ================= LOG ================= */
+/* ===== LOG ===== */
 
 function addLog(msg){
 let time=new Date().toLocaleTimeString();
@@ -368,7 +353,7 @@ c.appendChild(d);
 
 function clearLog(){logEntries=[];renderLog();}
 
-/* ================= SAVE SYSTEM ================= */
+/* ===== SAVE SYSTEM ===== */
 
 function saveCampaign(){
 let slot=document.getElementById("saveSlot").value;
@@ -401,7 +386,7 @@ renderLog();
 }
 
 function newCampaign(){
-if(!confirm("Start new campaign? This clears current progress."))return;
+if(!confirm("Start new campaign?"))return;
 resetTension();
 resetPresence();
 clearLog();
@@ -428,6 +413,10 @@ alert("Imported.");
 };
 reader.readAsText(file);
 }
+
+/* ===== INITIALIZE ===== */
+
+updatePresence();
 </script>
 </body>
 </html>
