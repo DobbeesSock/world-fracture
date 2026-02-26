@@ -70,6 +70,7 @@ button, select, input{
 #presenceFill{
     height:100%;
     width:0%;
+    background:#e74c3c;
     transition:.3s;
 }
 
@@ -147,6 +148,8 @@ button, select, input{
 <h2>Tension: <span id="tensionValue">0</span></h2>
 <div id="tensionRow"></div>
 <button onclick="increaseTension()">+Tension</button>
+<button onclick="decreaseTension()">-Tension</button>
+<button onclick="resetTension()">Reset</button>
 </div>
 
 <div class="section">
@@ -159,6 +162,7 @@ button, select, input{
 <div id="presenceBar"><div id="presenceFill"></div></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
+<button onclick="resetPresence()">Reset</button>
 </div>
 
 <div class="section">
@@ -188,43 +192,88 @@ const weGrid=document.getElementById("weGrid");
 const actSelector=document.getElementById("actSelector");
 
 const worldEventPools={
-act1:[ /* YOUR 45 ACT I EVENTS HERE */ ],
+act1:[ /* YOUR 45 EVENTS */ ],
 act2:[],
 act3:[]
 };
 
-/* -------- ACT SWITCH WITH CONFIRM -------- */
+/* -------- ACT SWITCH -------- */
 
 function attemptActChange(){
 let newAct=actSelector.value;
-
 if(newAct===currentAct) return;
 
-let confirmSwitch=confirm(
-"Switching Acts will reset Tension and clear World Events.\nContinue?"
-);
-
-if(!confirmSwitch){
+if(!confirm("Switching Acts will reset Tension and clear World Events.\nContinue?")){
 actSelector.value=currentAct;
 return;
 }
 
 currentAct=newAct;
+resetTension();
+usedEventsByAct[currentAct]=[];
+addLog("Transitioned to "+actSelector.options[actSelector.selectedIndex].text+".");
+}
 
-// Reset tension & WE
+/* -------- TENSION -------- */
+
+function increaseTension(){
+tension++;
+tensionSinceLastWE++;
+updateTensionUI();
+
+if(tensionSinceLastWE>=4){
+createWESlot();
+tensionSinceLastWE=0;
+drawWorldEvent();
+}
+}
+
+function decreaseTension(){
+if(tension<=0) return;
+tension--;
+tensionRow.removeChild(tensionRow.lastChild);
+updateTensionUI();
+}
+
+function resetTension(){
 tension=0;
 weCount=0;
 tensionSinceLastWE=0;
-
 tensionRow.innerHTML="";
 weGrid.innerHTML="";
-document.getElementById("tensionValue").innerText=0;
+updateTensionUI();
 document.getElementById("weCount").innerText=0;
+}
 
-// Reset used events for this act
-usedEventsByAct[currentAct]=[];
+function updateTensionUI(){
+document.getElementById("tensionValue").innerText=tension;
+}
 
-addLog("Transitioned to "+actSelector.options[actSelector.selectedIndex].text+".");
+function createWESlot(){
+let slot=document.createElement("div");
+slot.className="weSlot";
+weGrid.appendChild(slot);
+weCount++;
+document.getElementById("weCount").innerText=weCount;
+}
+
+/* -------- PRESENCE -------- */
+
+function changePresence(v){
+presence+=v;
+if(presence<0)presence=0;
+updatePresenceUI();
+}
+
+function resetPresence(){
+presence=0;
+updatePresenceUI();
+}
+
+function updatePresenceUI(){
+document.getElementById("presenceValue").innerText=presence;
+let percent=Math.min((presence/15)*100,100);
+document.getElementById("presenceFill").style.width=percent+"%";
 }
 
 /* -------- DRAW -------- */
@@ -237,7 +286,6 @@ return;
 }
 
 let used=usedEventsByAct[currentAct];
-
 if(used.length===pool.length){
 usedEventsByAct[currentAct]=[];
 used=[];
@@ -289,38 +337,6 @@ addLog(selectedEventTitle+" — "+selectedTag);
 document.getElementById("eventModal").style.display="none";
 }
 
-/* -------- TENSION -------- */
-
-function increaseTension(){
-tension++;
-tensionSinceLastWE++;
-
-document.getElementById("tensionValue").innerText=tension;
-
-let box=document.createElement("div");
-box.className="tensionBox";
-box.style.background="#e74c3c";
-tensionRow.appendChild(box);
-
-if(tensionSinceLastWE>=4){
-let slot=document.createElement("div");
-slot.className="weSlot";
-weGrid.appendChild(slot);
-weCount++;
-document.getElementById("weCount").innerText=weCount;
-tensionSinceLastWE=0;
-drawWorldEvent();
-}
-}
-
-/* -------- PRESENCE -------- */
-
-function changePresence(v){
-presence+=v;
-if(presence<0)presence=0;
-document.getElementById("presenceValue").innerText=presence;
-}
-
 /* -------- LOG -------- */
 
 function addLog(msg){
@@ -352,20 +368,23 @@ function loadCampaign(){
 let data=localStorage.getItem("campaignData");
 if(!data)return;
 let state=JSON.parse(data);
-tension=state.tension;
-weCount=state.weCount;
-tensionSinceLastWE=state.tensionSinceLastWE;
-presence=state.presence;
+
+tension=state.tension||0;
+weCount=state.weCount||0;
+tensionSinceLastWE=state.tensionSinceLastWE||0;
+presence=state.presence||0;
 logEntries=state.logEntries||[];
 usedEventsByAct=state.usedEventsByAct||{act1:[],act2:[],act3:[]};
 currentAct=state.currentAct||"act1";
+
 actSelector.value=currentAct;
-document.getElementById("tensionValue").innerText=tension;
-document.getElementById("weCount").innerText=weCount;
-document.getElementById("presenceValue").innerText=presence;
+updateTensionUI();
+updatePresenceUI();
 renderLog();
 }
 
+updateTensionUI();
+updatePresenceUI();
 renderLog();
 </script>
 </body>
