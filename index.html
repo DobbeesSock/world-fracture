@@ -781,41 +781,45 @@ function clearLog(){logEntries=[];renderLog();}
 
 /* SAVE */
 
-function saveCampaign(){
-let slot=document.getElementById("saveSlot").value;
-localStorage.setItem(slot,JSON.stringify({
-tension,weCount,tensionSinceLastWE,presence,currentAct
-}));
-alert("Saved.");
-}
-
 function loadCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data)return;
-let state=JSON.parse(data);
 
-tension=state.tension||0;
-weCount=state.weCount||0;
-tensionSinceLastWE=state.tensionSinceLastWE||0;
-presence=state.presence||0;
-currentAct=state.currentAct||"act1";
+  const slot=document.getElementById("saveSlot").value;
+  const data=localStorage.getItem(slot);
+  if(!data) return;
 
-document.getElementById("actSelector").value=currentAct;
+  const state=JSON.parse(data);
 
-resetTension();
-for(let i=0;i<tension;i++)increaseTension();
-updatePresence();
+  tension=state.tension||0;
+  weCount=state.weCount||0;
+  tensionSinceLastWE=state.tensionSinceLastWE||0;
+  presence=state.presence||0;
+  currentAct=state.currentAct||"act1";
+
+  document.getElementById("actSelector").value=currentAct;
+
+  // rebuild UI safely
+  tensionRow.innerHTML="";
+  weGrid.innerHTML="";
+
+  for(let i=0;i<tension;i++){
+    const box=document.createElement("div");
+    box.className="tensionBox";
+    box.style.background="#e74c3c";
+    tensionRow.appendChild(box);
+  }
+
+  for(let i=0;i<weCount;i++){
+    const slot=document.createElement("div");
+    slot.className="weSlot";
+    slot.style.background="#e74c3c";
+    weGrid.appendChild(slot);
+  }
+
+  document.getElementById("tensionValue").textContent=tension;
+  document.getElementById("weCount").textContent=weCount;
+
+  updatePresence();
 }
-
-function newCampaign(){
-if(!confirm("Start new campaign?"))return;
-resetTension();
-resetPresence();
-clearLog();
-}
-
-updatePresence();
 
 </script>
 </body>
