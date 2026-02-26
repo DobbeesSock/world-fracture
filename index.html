@@ -64,15 +64,6 @@ button, select{
     width:0%;
     transition:width .3s ease, background .3s ease;
 }
-#logContainer{
-    max-height:200px;
-    overflow-y:auto;
-    background:#111;
-    padding:10px;
-    border-radius:6px;
-    text-align:left;
-    font-size:0.9em;
-}
 .modal{
     position:fixed;
     inset:0;
@@ -95,18 +86,6 @@ button, select{
 
 <h1>WORLD FRACTURE</h1>
 
-<!-- SAVE SYSTEM -->
-<div class="section">
-<select id="saveSlot">
-<option value="slot1">Campaign Slot 1</option>
-<option value="slot2">Campaign Slot 2</option>
-<option value="slot3">Campaign Slot 3</option>
-</select>
-<button onclick="saveCampaign()">Save</button>
-<button onclick="loadCampaign()">Load</button>
-<button onclick="newCampaign()">New Campaign</button>
-</div>
-
 <!-- ACT -->
 <div class="section">
 <h2>Current Act</h2>
@@ -124,6 +103,7 @@ button, select{
 <button onclick="increaseTension()">+Tension</button>
 <button onclick="decreaseTension()">-Tension</button>
 <button onclick="resetTension()">Reset</button>
+<button onclick="drawWorldEvent()">Force Event</button>
 </div>
 
 <!-- WORLD EVENTS -->
@@ -135,18 +115,13 @@ button, select{
 <!-- PRESENCE -->
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
-<div id="presenceBar"><div id="presenceFill"></div></div>
+<div id="presenceBar">
+<div id="presenceFill"></div>
+</div>
 <div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
 <button onclick="resetPresence()">Reset</button>
-</div>
-
-<!-- LOG -->
-<div class="section">
-<h2>Cave Log</h2>
-<div id="logContainer"></div>
-<button onclick="clearLog()">Clear Log</button>
 </div>
 
 <!-- MODAL -->
@@ -158,6 +133,7 @@ button, select{
 </div>
 </div>
 
+<!-- LOAD EVENTS FIRST -->
 <script src="events.js"></script>
 
 <script>
@@ -170,28 +146,18 @@ let weCount=0;
 let presence=0;
 let currentAct="act1";
 let usedEventsByAct={act1:[],act2:[],act3:[]};
-let logEntries=[];
-
-/* ================= EVENTS ================= */
-
 
 /* ================= ACT SWITCH ================= */
 
 function switchAct(){
 let newAct=document.getElementById("actSelector").value;
 if(newAct===currentAct) return;
-if(!confirm("Switching Acts resets Tension. Continue?")){
-document.getElementById("actSelector").value=currentAct;
-return;
-}
 currentAct=newAct;
 resetTension();
-addLog("Switched to "+currentAct.toUpperCase());
 }
 
 /* ================= TENSION ================= */
 
-<button onclick="drawWorldEvent()">Force Event</button>
 function getThreshold(){
 if(weCount<5) return 4;
 if(weCount<10) return 3;
@@ -209,11 +175,14 @@ document.getElementById("tensionRow").appendChild(box);
 
 if(tensionSinceLastWE>=getThreshold()){
 tensionSinceLastWE=0;
+
 let slot=document.createElement("div");
 slot.className="weSlot";
 document.getElementById("weGrid").appendChild(slot);
+
 weCount++;
 document.getElementById("weCount").textContent=weCount;
+
 drawWorldEvent();
 }
 }
@@ -243,13 +212,19 @@ presence+=v;
 if(presence<0) presence=0;
 updatePresence();
 }
-function resetPresence(){presence=0;updatePresence();}
+
+function resetPresence(){
+presence=0;
+updatePresence();
+}
+
 function updatePresence(){
 document.getElementById("presenceValue").textContent=presence;
 let fill=document.getElementById("presenceFill");
 let tier=document.getElementById("presenceTier");
 let percent=Math.min((presence/15)*100,100);
 fill.style.width=percent+"%";
+
 if(presence<=2){fill.style.background="#1abc9c";tier.textContent="Dormant (0–2)";}
 else if(presence<=4){fill.style.background="#2ecc71";tier.textContent="Stirring (3–4)";}
 else if(presence<=6){fill.style.background="#f1c40f";tier.textContent="Unstable (5–6)";}
@@ -262,114 +237,41 @@ else{fill.style.background="#8b0000";tier.textContent="Cataclysm (11+)";}
 
 function drawWorldEvent(){
 
-  console.log("---- DRAW WORLD EVENT ----");
-  console.log("Current Act:", currentAct);
-  console.log("Event Pools Object:", worldEventPools);
+let pool = worldEventPools[currentAct];
+let used = usedEventsByAct[currentAct];
 
-  if(typeof worldEventPools === "undefined"){
-    console.error("worldEventPools is NOT loaded. events.js failed.");
-    return;
-  }
+if(!pool || pool.length===0) return;
 
-  if(!worldEventPools[currentAct]){
-    console.error("No event pool found for:", currentAct);
-    return;
-  }
-
-  let pool = worldEventPools[currentAct];
-  console.log("Pool Length:", pool.length);
-
-  if(pool.length === 0){
-    console.warn("Event pool is empty.");
-    return;
-  }
-
-  let used = usedEventsByAct[currentAct] || [];
-
-  if(used.length >= pool.length){
-    console.log("All events used. Resetting pool.");
-    usedEventsByAct[currentAct] = [];
-    used = [];
-  }
-
-  let available = pool.filter((_,i)=>!used.includes(i));
-
-  if(available.length === 0){
-    console.warn("No available events after filter.");
-    return;
-  }
-
-  let randomIndex = Math.floor(Math.random()*available.length);
-  let event = available[randomIndex];
-
-  let realIndex = pool.indexOf(event);
-  usedEventsByAct[currentAct].push(realIndex);
-
-  console.log("Opening Event:", event.title);
-
-  openEventModal(event);
+if(used.length>=pool.length){
+usedEventsByAct[currentAct]=[];
+used=[];
 }
+
+let available=pool.filter((_,i)=>!used.includes(i));
+let randomIndex=Math.floor(Math.random()*available.length);
+let event=available[randomIndex];
+
+let realIndex=pool.indexOf(event);
+usedEventsByAct[currentAct].push(realIndex);
+
+openEventModal(event);
+}
+
 function openEventModal(event){
 document.getElementById("eventTitle").textContent=event.title;
 document.getElementById("eventText").textContent=event.text;
+
 let container=document.getElementById("eventOptions");
 container.innerHTML="";
+
 event.options.forEach(o=>{
 let btn=document.createElement("button");
 btn.textContent=o.label+" ["+o.tag+"]";
-btn.onclick=()=>{addLog(event.title+" — "+o.tag);document.getElementById("eventModal").style.display="none";};
+btn.onclick=()=>document.getElementById("eventModal").style.display="none";
 container.appendChild(btn);
 });
+
 document.getElementById("eventModal").style.display="flex";
-}
-
-/* ================= LOG ================= */
-
-function addLog(msg){
-let time=new Date().toLocaleTimeString();
-logEntries.unshift("["+time+"] "+msg);
-renderLog();
-}
-function renderLog(){
-let c=document.getElementById("logContainer");
-c.innerHTML="";
-logEntries.forEach(e=>{
-let d=document.createElement("div");
-d.textContent=e;
-c.appendChild(d);
-});
-}
-function clearLog(){logEntries=[];renderLog();}
-
-/* ================= SAVE ================= */
-
-function saveCampaign(){
-let slot=document.getElementById("saveSlot").value;
-localStorage.setItem(slot,JSON.stringify({tension,weCount,tensionSinceLastWE,presence,currentAct}));
-alert("Saved.");
-}
-
-function loadCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data) return;
-let state=JSON.parse(data);
-tension=state.tension||0;
-weCount=state.weCount||0;
-tensionSinceLastWE=state.tensionSinceLastWE||0;
-presence=state.presence||0;
-currentAct=state.currentAct||"act1";
-document.getElementById("actSelector").value=currentAct;
-resetTension();
-for(let i=0;i<tension;i++) increaseTension();
-updatePresence();
-}
-
-function newCampaign(){
-if(!confirm("Start new campaign?")) return;
-resetTension();
-resetPresence();
-clearLog();
 }
 
 updatePresence();
