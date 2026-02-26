@@ -321,23 +321,31 @@ updatePresence();
 }
 
 function updatePresence(){
-document.getElementById("presenceValue").innerText=presence;
+    document.getElementById("presenceValue").innerText = presence;
 
-let percent=Math.min((presence/15)*100,100);
-let fill=document.getElementById("presenceFill");
-fill.style.width=percent+"%";
+    let percent = Math.min((presence / 15) * 100, 100);
+    let fill = document.getElementById("presenceFill");
+    fill.style.width = percent + "%";
 
-let tier="0–2";
-if(presence>=3&&presence<=4)tier="3–4";
-if(presence>=5&&presence<=6)tier="5–6";
-if(presence>=7&&presence<=8)tier="7–8";
-if(presence>=9&&presence<=10)tier="9–10";
-if(presence>=11&&presence<=12)tier="11–12";
-if(presence>=13)tier="13–15";
+    let tier = "0–2";
 
-document.getElementById("presenceTier").innerText=tier;
+    if(presence >= 3 && presence <= 4) tier = "3–4";
+    if(presence >= 5 && presence <= 6) tier = "5–6";
+    if(presence >= 7 && presence <= 8) tier = "7–8";
+    if(presence >= 9 && presence <= 10) tier = "9–10";
+    if(presence >= 11 && presence <= 12) tier = "11–12";
+    if(presence >= 13) tier = "13–15";
+
+    document.getElementById("presenceTier").innerText = tier;
+
+    // COLOR SCALING
+    if(presence <= 2) fill.style.background = "#1abc9c";        // teal
+    else if(presence <= 4) fill.style.background = "#2ecc71";   // green
+    else if(presence <= 6) fill.style.background = "#f1c40f";   // yellow
+    else if(presence <= 8) fill.style.background = "#e67e22";   // orange
+    else if(presence <= 10) fill.style.background = "#e74c3c";  // red
+    else fill.style.background = "#8b0000";                     // deep crimson
 }
-
 /* ===== LOG ===== */
 
 function addLog(msg){
