@@ -729,6 +729,8 @@ function updatePresence(){
   const tierEl  = document.getElementById("presenceTier");
   const fill    = document.getElementById("presenceFill");
 
+  if(!valueEl || !tierEl || !fill) return; // safety guard
+
   valueEl.textContent = presence;
 
   const percent = Math.min((presence / 15) * 100, 100);
@@ -738,27 +740,27 @@ function updatePresence(){
 
   if(presence <= 2){
     fill.style.background="#1abc9c";
-    tierText = "0–2 (Dormant)";
+    tierText = "Dormant (0–2)";
   }
   else if(presence <= 4){
     fill.style.background="#2ecc71";
-    tierText = "3–4 (Stirring)";
+    tierText = "Stirring (3–4)";
   }
   else if(presence <= 6){
     fill.style.background="#f1c40f";
-    tierText = "5–6 (Unstable)";
+    tierText = "Unstable (5–6)";
   }
   else if(presence <= 8){
     fill.style.background="#e67e22";
-    tierText = "7–8 (Hostile)";
+    tierText = "Hostile (7–8)";
   }
   else if(presence <= 10){
     fill.style.background="#e74c3c";
-    tierText = "9–10 (Critical)";
+    tierText = "Critical (9–10)";
   }
   else{
     fill.style.background="#8b0000";
-    tierText = "11+ (Cataclysm)";
+    tierText = "Cataclysm (11+)";
   }
 
   tierEl.textContent = tierText;
