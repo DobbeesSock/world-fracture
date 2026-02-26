@@ -260,15 +260,38 @@ else{fill.style.background="#8b0000";tier.textContent="Cataclysm (11+)";}
 /* ================= EVENT DRAW ================= */
 
 function drawWorldEvent(){
-let pool=worldEventPools[currentAct];
-let used=usedEventsByAct[currentAct];
-if(pool.length===0) return;
-if(used.length===pool.length){usedEventsByAct[currentAct]=[];used=[];}
-let available=pool.filter((_,i)=>!used.includes(i));
-let randomIndex=Math.floor(Math.random()*available.length);
-let eventIndex=pool.indexOf(available[randomIndex]);
-used.push(eventIndex);
-openEventModal(pool[eventIndex]);
+
+  if(!worldEventPools[currentAct]){
+    console.error("No event pool for:", currentAct);
+    return;
+  }
+
+  let pool = worldEventPools[currentAct];
+  let used = usedEventsByAct[currentAct];
+
+  if(pool.length === 0){
+    console.warn("Event pool empty for:", currentAct);
+    return;
+  }
+
+  if(used.length === pool.length){
+    usedEventsByAct[currentAct] = [];
+    used = [];
+  }
+
+  let available = pool.filter((_,i)=>!used.includes(i));
+
+  if(available.length === 0){
+    console.warn("No available events.");
+    return;
+  }
+
+  let randomIndex = Math.floor(Math.random()*available.length);
+  let eventIndex = pool.indexOf(available[randomIndex]);
+
+  used.push(eventIndex);
+
+  openEventModal(pool[eventIndex]);
 }
 
 function openEventModal(event){
