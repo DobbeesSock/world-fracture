@@ -685,45 +685,40 @@ document.getElementById("eventModal").style.display="none";
 
 /* TENSION */
 
-function getThreshold(){
-if(weCount<5)return 4;
-if(weCount<10)return 3;
-return 2;
-}
-
 function increaseTension(){
-tension++;tensionSinceLastWE++;
-document.getElementById("tensionValue").innerText=tension;
+  tension++;
+  tensionSinceLastWE++;
 
-let box=document.createElement("div");
-box.className="tensionBox";
-box.style.background="#e74c3c";
-tensionRow.appendChild(box);
+  document.getElementById("tensionValue").textContent = tension;
 
-if(tensionSinceLastWE>=getThreshold()){
-let slot=document.createElement("div");
-slot.className="weSlot";
-slot.style.background="#e74c3c";
-weGrid.appendChild(slot);
-weCount++;tensionSinceLastWE=0;
-document.getElementById("weCount").innerText=weCount;
-drawWorldEvent();
-}
+  const box = document.createElement("div");
+  box.className="tensionBox";
+  box.style.background="#e74c3c";
+  tensionRow.appendChild(box);
+
+  if(tensionSinceLastWE >= getThreshold()){
+    const slot=document.createElement("div");
+    slot.className="weSlot";
+    slot.style.background="#e74c3c";
+    weGrid.appendChild(slot);
+
+    weCount++;
+    tensionSinceLastWE=0;
+
+    document.getElementById("weCount").textContent = weCount;
+    drawWorldEvent();
+  }
 }
 
 function decreaseTension(){
-if(tension<=0)return;
-tension--;
-tensionRow.removeChild(tensionRow.lastChild);
-document.getElementById("tensionValue").innerText=tension;
-}
+  if(tension <= 0) return;
 
-function resetTension(){
-tension=0;weCount=0;tensionSinceLastWE=0;
-tensionRow.innerHTML="";
-weGrid.innerHTML="";
-document.getElementById("tensionValue").innerText=0;
-document.getElementById("weCount").innerText=0;
+  tension--;
+  document.getElementById("tensionValue").textContent = tension;
+
+  if(tensionRow.lastChild){
+    tensionRow.removeChild(tensionRow.lastChild);
+  }
 }
 
 /* PRESENCE */
