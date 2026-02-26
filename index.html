@@ -58,18 +58,22 @@ button, select, input{
 }
 
 #presenceBar{
-    height:12px;
+    height:14px;
+    width:100%;
     background:#333;
-    border-radius:5px;
+    border-radius:6px;
     overflow:hidden;
+    position:relative;
 }
 
 #presenceFill{
+    position:absolute;
+    left:0;
+    top:0;
     height:100%;
     width:0%;
-    background:#1abc9c;   /* ← THIS IS THE MISSING PIECE */
-    transition:.3s;
-}
+    background:#1abc9c;
+    transition:width 0.3s ease;
 }
 
 #logContainer{
