@@ -15,14 +15,12 @@ body{
     color:#e6d3a3;
     text-align:center;
 }
-
 .section{
     margin:20px;
     padding:15px;
     background:#1a1a1a;
     border-radius:10px;
 }
-
 button, select{
     margin:5px;
     padding:8px 12px;
@@ -32,70 +30,51 @@ button, select{
     color:#e6d3a3;
     cursor:pointer;
 }
-
-/* Tension */
-#tensionRow{
+#tensionRow, #breachRow{
     display:flex;
     flex-wrap:wrap;
     gap:5px;
     justify-content:center;
 }
-
 .tensionBox{
     width:20px;
     height:20px;
     border-radius:4px;
     background:#e74c3c;
 }
-
-/* Presence */
-#presenceBar{
+.breachBox{
+    width:20px;
+    height:20px;
+    border-radius:4px;
+    background:#9b59b6;
+}
+#weGrid, #breachGrid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+.weSlot{
+    height:35px;
+    border-radius:4px;
+    background:#e74c3c;
+}
+.breachSlot{
+    height:35px;
+    border-radius:4px;
+    background:#9b59b6;
+}
+#presenceBar, #harmonicBar, #convergenceBar{
     height:16px;
     width:100%;
     background:#333;
     border-radius:8px;
     overflow:hidden;
 }
-
-#presenceFill{
+#presenceFill, #harmonicFill, #convergenceFill{
     height:100%;
     width:0%;
     transition:width .3s ease, background .3s ease;
 }
-
-/* Modal */
-.modal{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.85);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:1000;
-}
-
-.modal-content{
-    background:#1a1a1a;
-    padding:25px;
-    border-radius:10px;
-    width:90%;
-    max-width:500px;
-    text-align:left;
-    z-index:1001;
-}
-
-#eventOptions button{
-    display:block;
-    width:100%;
-    margin:10px 0;
-    padding:12px;
-    text-align:left;
-}
-
-/* Log */
 #logContainer{
     max-height:200px;
     overflow-y:auto;
@@ -104,6 +83,22 @@ button, select{
     border-radius:6px;
     text-align:left;
     font-size:0.9em;
+}
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+.modal-content{
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:10px;
+    width:90%;
+    max-width:500px;
+    text-align:left;
 }
 </style>
 </head>
@@ -120,6 +115,7 @@ button, select{
 </select>
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
+<button onclick="newCampaign()">New Campaign</button>
 </div>
 
 <!-- ACT -->
@@ -132,230 +128,289 @@ button, select{
 </select>
 </div>
 
-<!-- TENSION -->
+<!-- WORLD TENSION -->
 <div class="section">
-<h2>Tension: <span id="tensionValue">0</span></h2>
+<h2>World Tension: <span id="tensionValue">0</span></h2>
 <div id="tensionRow"></div>
 <button onclick="increaseTension()">+Tension</button>
 <button onclick="decreaseTension()">-Tension</button>
 <button onclick="resetTension()">Reset</button>
 </div>
 
+<div class="section">
+<h2>World Events: <span id="weCount">0</span></h2>
+<div id="weGrid"></div>
+</div>
+
+<!-- BREACH TENSION -->
+<div class="section">
+<h2>Breach Tension: <span id="breachValue">0</span></h2>
+<div id="breachRow"></div>
+<button onclick="increaseBreach()">+Tension</button>
+<button onclick="decreaseBreach()">-Tension</button>
+<button onclick="resetBreach()">Reset</button>
+</div>
+
+<div class="section">
+<h2>Breach Events: <span id="breachEventCount">0</span></h2>
+<div id="breachGrid"></div>
+</div>
+
 <!-- PRESENCE -->
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
 <div id="presenceBar"><div id="presenceFill"></div></div>
-<div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
+<button onclick="resetPresence()">Reset</button>
 </div>
 
-<!-- EVENT LOG -->
+<!-- HARMONIC -->
 <div class="section">
-<h2>World Log</h2>
+<h2>Harmonic: <span id="harmonicValue">0</span></h2>
+<div id="harmonicBar"><div id="harmonicFill"></div></div>
+<div><span id="harmonicTier">Quiet</span></div>
+<button onclick="changeHarmonic(1)">+1</button>
+<button onclick="changeHarmonic(-1)">-1</button>
+<button onclick="resetHarmonic()">Reset</button>
+</div>
+
+<!-- CONVERGENCE -->
+<div class="section">
+<h2>Convergence: <span id="convergenceValue">0</span></h2>
+<div id="convergenceBar"><div id="convergenceFill"></div></div>
+<div><span id="convergenceTier">Subtle</span></div>
+<button onclick="changeConvergence(1)">+1</button>
+<button onclick="changeConvergence(-1)">-1</button>
+<button onclick="resetConvergence()">Reset</button>
+</div>
+
+<!-- LOG -->
+<div class="section">
+<h2>Cave Log</h2>
 <div id="logContainer"></div>
 <button onclick="clearLog()">Clear Log</button>
 </div>
 
-<!-- MODAL -->
-<div class="modal" id="eventModal">
-<div class="modal-content">
-<h2 id="eventTitle"></h2>
-<p id="eventText"></p>
-<div id="eventOptions"></div>
-</div>
-</div>
-
-<script src="events.js"></script>
-
 <script>
 
-let tension=0;
-let tensionSinceLastWE=0;
-let weCount=0;
+let tension=0, tensionSinceLastWE=0, weCount=0;
+let breachTension=0, breachSinceLastEvent=0, breachEventCount=0;
 let presence=0;
+let harmonic=0, harmonicTierLevel=0;
+let convergence=0, convergenceTierLevel=0;
 let currentAct="act1";
-let usedEventsByAct={act1:[],act2:[],act3:[]};
 let logEntries=[];
 
-/* ACT SWITCH */
-function switchAct(){
-    currentAct=document.getElementById("actSelector").value;
-}
+/* ================= LOG ================= */
 
-/* TENSION */
+function addLog(msg){
+let time=new Date().toLocaleTimeString();
+logEntries.unshift("["+time+"] "+msg);
+renderLog();
+}
+function renderLog(){
+let c=document.getElementById("logContainer");
+c.innerHTML="";
+logEntries.forEach(e=>{
+let d=document.createElement("div");
+d.textContent=e;
+c.appendChild(d);
+});
+}
+function clearLog(){logEntries=[];renderLog();}
+
+/* ================= WORLD TENSION ================= */
+
 function getThreshold(){
-    if(weCount<5) return 4;
-    if(weCount<10) return 3;
-    return 2;
+if(weCount<5) return 4;
+if(weCount<10) return 3;
+return 2;
 }
 
 function increaseTension(){
-    tension++;
-    tensionSinceLastWE++;
-    document.getElementById("tensionValue").textContent=tension;
+tension++;
+tensionSinceLastWE++;
+document.getElementById("tensionValue").textContent=tension;
 
-    let box=document.createElement("div");
-    box.className="tensionBox";
-    document.getElementById("tensionRow").appendChild(box);
+let box=document.createElement("div");
+box.className="tensionBox";
+document.getElementById("tensionRow").appendChild(box);
 
-    if(tensionSinceLastWE>=getThreshold()){
-        tensionSinceLastWE=0;
-        weCount++;
-        drawWorldEvent();
-    }
+if(tensionSinceLastWE>=getThreshold()){
+tensionSinceLastWE=0;
+let slot=document.createElement("div");
+slot.className="weSlot";
+document.getElementById("weGrid").appendChild(slot);
+weCount++;
+document.getElementById("weCount").textContent=weCount;
+addLog("World Event Triggered.");
+}
 }
 
 function decreaseTension(){
-    if(tension<=0) return;
-    tension--;
-    document.getElementById("tensionValue").textContent=tension;
-    let row=document.getElementById("tensionRow");
-    if(row.lastChild) row.removeChild(row.lastChild);
+if(tension<=0) return;
+tension--;
+document.getElementById("tensionValue").textContent=tension;
+let row=document.getElementById("tensionRow");
+if(row.lastChild) row.removeChild(row.lastChild);
 }
 
 function resetTension(){
-  tension = 0;
-  tensionSinceLastWE = 0;
-  weCount = 0;
-
-  document.getElementById("tensionRow").innerHTML = "";
-  document.getElementById("weGrid").innerHTML = "";
-
-  document.getElementById("tensionValue").textContent = 0;
-  document.getElementById("weCount").textContent = 0;
+tension=0; weCount=0; tensionSinceLastWE=0;
+document.getElementById("tensionRow").innerHTML="";
+document.getElementById("weGrid").innerHTML="";
+document.getElementById("tensionValue").textContent=0;
+document.getElementById("weCount").textContent=0;
 }
 
-/* PRESENCE */
-function changePresence(v){
-    presence+=v;
-    if(presence<0) presence=0;
-    updatePresence();
+/* ================= BREACH ================= */
+
+function getBreachThreshold(){
+if(breachEventCount<5) return 4;
+if(breachEventCount<10) return 3;
+return 2;
 }
+
+function increaseBreach(){
+breachTension++;
+breachSinceLastEvent++;
+document.getElementById("breachValue").textContent=breachTension;
+
+let box=document.createElement("div");
+box.className="breachBox";
+document.getElementById("breachRow").appendChild(box);
+
+if(breachSinceLastEvent>=getBreachThreshold()){
+breachSinceLastEvent=0;
+let slot=document.createElement("div");
+slot.className="breachSlot";
+document.getElementById("breachGrid").appendChild(slot);
+breachEventCount++;
+document.getElementById("breachEventCount").textContent=breachEventCount;
+addLog("Breach Event Triggered.");
+}
+}
+
+function decreaseBreach(){
+if(breachTension<=0) return;
+breachTension--;
+document.getElementById("breachValue").textContent=breachTension;
+let row=document.getElementById("breachRow");
+if(row.lastChild) row.removeChild(row.lastChild);
+}
+
+function resetBreach(){
+breachTension=0; breachSinceLastEvent=0; breachEventCount=0;
+document.getElementById("breachRow").innerHTML="";
+document.getElementById("breachGrid").innerHTML="";
+document.getElementById("breachValue").textContent=0;
+document.getElementById("breachEventCount").textContent=0;
+}
+
+/* ================= HARMONIC ================= */
+
+function changeHarmonic(v){ harmonic+=v; if(harmonic<0) harmonic=0; updateHarmonic();}
+function resetHarmonic(){ harmonic=0; harmonicTierLevel=0; updateHarmonic();}
+
+function updateHarmonic(){
+document.getElementById("harmonicValue").textContent=harmonic;
+let fill=document.getElementById("harmonicFill");
+let tier=document.getElementById("harmonicTier");
+
+let percent=Math.min((harmonic/12)*100,100);
+fill.style.width=percent+"%";
+
+let newTier=0;
+
+if(harmonic>=10){ newTier=4; fill.style.background="#8b0000"; tier.textContent="Aligned (10+)";}
+else if(harmonic>=7){ newTier=3; fill.style.background="#e67e22"; tier.textContent="Surging (7–9)";}
+else if(harmonic>=5){ newTier=2; fill.style.background="#f1c40f"; tier.textContent="Resonant (5–6)";}
+else if(harmonic>=2){ newTier=1; fill.style.background="#2ecc71"; tier.textContent="Awakening (2–4)";}
+else{ fill.style.background="#1abc9c"; tier.textContent="Quiet (0–1)";}
+
+if(newTier>harmonicTierLevel){
+if(newTier===1) addLog("Creatures gain +2 HP.");
+if(newTier===2) addLog("The air crackles with surging energy.");
+if(newTier===3) addLog("Bosses gain +2 Retaliate.");
+if(newTier===4) addLog("Ground adjacent to Caves becomes Hazardous Terrain.");
+harmonicTierLevel=newTier;
+}
+}
+
+/* ================= CONVERGENCE ================= */
+
+function changeConvergence(v){ convergence+=v; if(convergence<0) convergence=0; updateConvergence();}
+function resetConvergence(){ convergence=0; convergenceTierLevel=0; updateConvergence();}
+
+function updateConvergence(){
+document.getElementById("convergenceValue").textContent=convergence;
+let fill=document.getElementById("convergenceFill");
+let tier=document.getElementById("convergenceTier");
+
+let percent=Math.min((convergence/12)*100,100);
+fill.style.width=percent+"%";
+
+let newTier=0;
+
+if(convergence>=10){ newTier=4; fill.style.background="#8b0000"; tier.textContent="Inevitable (10+)";}
+else if(convergence>=8){ newTier=3; fill.style.background="#e67e22"; tier.textContent="Narrowing (8–9)";}
+else if(convergence>=5){ newTier=2; fill.style.background="#f1c40f"; tier.textContent="Rippling (5–7)";}
+else if(convergence>=3){ newTier=1; fill.style.background="#2ecc71"; tier.textContent="Gathering (3–4)";}
+else{ fill.style.background="#1abc9c"; tier.textContent="Subtle (0–2)";}
+
+if(newTier>convergenceTierLevel){
+if(newTier===1) addLog("Dark clouds gather overhead.");
+if(newTier===2) addLog("Ripples of energy scatter across the sky.");
+if(newTier===3) addLog("All things point toward the future.");
+if(newTier===4) addLog("Interdimensional terrain appears along the edge of the map.");
+convergenceTierLevel=newTier;
+}
+}
+
+/* ================= PRESENCE ================= */
+
+function changePresence(v){ presence+=v; if(presence<0) presence=0; updatePresence();}
+function resetPresence(){ presence=0; updatePresence();}
 
 function updatePresence(){
-    document.getElementById("presenceValue").textContent=presence;
-    let fill=document.getElementById("presenceFill");
-    let tier=document.getElementById("presenceTier");
-
-    let percent=Math.min((presence/15)*100,100);
-    fill.style.width=percent+"%";
-
-    if(presence<=2){ fill.style.background="#1abc9c"; tier.textContent="Dormant (0–2)"; }
-    else if(presence<=4){ fill.style.background="#2ecc71"; tier.textContent="Stirring (3–4)"; }
-    else if(presence<=6){ fill.style.background="#f1c40f"; tier.textContent="Unstable (5–6)"; }
-    else if(presence<=8){ fill.style.background="#e67e22"; tier.textContent="Hostile (7–8)"; }
-    else if(presence<=10){ fill.style.background="#e74c3c"; tier.textContent="Critical (9–10)"; }
-    else{ fill.style.background="#8b0000"; tier.textContent="Cataclysm (11+)"; }
+document.getElementById("presenceValue").textContent=presence;
+let fill=document.getElementById("presenceFill");
+let percent=Math.min((presence/15)*100,100);
+fill.style.width=percent+"%";
+fill.style.background="#e74c3c";
 }
 
-/* EVENT DRAW */
-function drawWorldEvent(){
-    let pool=worldEventPools[currentAct];
-    if(!pool||pool.length===0) return;
+/* ================= SAVE ================= */
 
-    let used=usedEventsByAct[currentAct];
-    if(used.length>=pool.length){
-        usedEventsByAct[currentAct]=[];
-        used=[];
-    }
-
-    let available=pool.filter((_,i)=>!used.includes(i));
-    let event=available[Math.floor(Math.random()*available.length)];
-    used.push(pool.indexOf(event));
-
-    openEventModal(event);
-}
-
-/* EVENT MODAL WITH LOGGING */
-function openEventModal(event){
-
-    document.getElementById("eventTitle").textContent = event.title;
-    document.getElementById("eventText").textContent = event.text;
-
-    let container = document.getElementById("eventOptions");
-    container.innerHTML = "";
-
-    event.options.forEach(o => {
-
-        let btn = document.createElement("button");
-        btn.textContent = o.label + " [" + o.tag + "]";
-
-        btn.onclick = () => {
-
-            addLog(event.title + " → " + o.label + " (" + o.tag + ")");
-
-            container.innerHTML = `
-                <div style="margin-top:15px;font-size:1.1em;">
-                    <strong>${o.label}</strong>
-                </div>
-
-                <div style="margin-top:10px;font-style:italic;opacity:0.9;">
-                    ${o.effect || "The world shifts..."}
-                </div>
-
-                <button id="continueBtn" style="margin-top:20px;">
-                    Continue
-                </button>
-            `;
-
-            document.getElementById("continueBtn").onclick = () => {
-                document.getElementById("eventModal").style.display = "none";
-            };
-
-        };
-
-        container.appendChild(btn);
-    });
-
-    document.getElementById("eventModal").style.display = "flex";
-}
-
-/* LOG SYSTEM */
-function addLog(entry){
-    let time = new Date().toLocaleTimeString();
-    logEntries.unshift("[" + time + "] " + entry);
-    renderLog();
-}
-
-function renderLog(){
-    let container = document.getElementById("logContainer");
-    container.innerHTML = "";
-
-    logEntries.forEach(e=>{
-        let div=document.createElement("div");
-        div.textContent=e;
-        container.appendChild(div);
-    });
-}
-
-function clearLog(){
-    logEntries=[];
-    renderLog();
-}
-
-/* SAVE */
 function saveCampaign(){
-    let slot=document.getElementById("saveSlot").value;
-    localStorage.setItem(slot,JSON.stringify({tension,presence,currentAct,logEntries}));
+let slot=document.getElementById("saveSlot").value;
+localStorage.setItem(slot,JSON.stringify({
+tension,weCount,tensionSinceLastWE,
+breachTension,breachSinceLastEvent,breachEventCount,
+presence,harmonic,convergence,harmonicTierLevel,convergenceTierLevel,currentAct
+}));
+alert("Saved.");
 }
 
 function loadCampaign(){
-    let slot=document.getElementById("saveSlot").value;
-    let data=localStorage.getItem(slot);
-    if(!data) return;
-    let state=JSON.parse(data);
-    tension=state.tension||0;
-    presence=state.presence||0;
-    currentAct=state.currentAct||"act1";
-    logEntries=state.logEntries||[];
-    document.getElementById("actSelector").value=currentAct;
-    document.getElementById("tensionValue").textContent=tension;
-    updatePresence();
-    renderLog();
+let slot=document.getElementById("saveSlot").value;
+let data=localStorage.getItem(slot);
+if(!data) return;
+let state=JSON.parse(data);
+
+Object.assign(window,state);
+
+updateHarmonic();
+updateConvergence();
+updatePresence();
+document.getElementById("tensionValue").textContent=tension;
+document.getElementById("breachValue").textContent=breachTension;
 }
 
 updatePresence();
+updateHarmonic();
+updateConvergence();
 
 </script>
 </body>
