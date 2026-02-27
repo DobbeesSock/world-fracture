@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Fracture</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 body{
     margin:0;
-    font-family: serif;
+    font-family:'Cinzel', serif;
     background:#111;
     color:#e6d3a3;
     text-align:center;
 }
+
+/* Sections */
 .section{
     margin:20px;
     padding:15px;
     background:#1a1a1a;
     border-radius:10px;
 }
+
+/* Buttons */
 button, select{
     margin:5px;
     padding:8px 12px;
@@ -27,28 +34,23 @@ button, select{
     color:#e6d3a3;
     cursor:pointer;
 }
+
+/* Tension */
 #tensionRow{
     display:flex;
     flex-wrap:wrap;
     gap:5px;
     justify-content:center;
 }
+
 .tensionBox{
     width:20px;
     height:20px;
     border-radius:4px;
     background:#e74c3c;
 }
-#weGrid{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:6px;
-}
-.weSlot{
-    height:35px;
-    border-radius:4px;
-    background:#e74c3c;
-}
+
+/* Presence */
 #presenceBar{
     height:16px;
     width:100%;
@@ -56,19 +58,27 @@ button, select{
     border-radius:8px;
     overflow:hidden;
 }
+
 #presenceFill{
     height:100%;
     width:0%;
     transition:width .3s ease, background .3s ease;
 }
+
+/* Modal */
 .modal{
     position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.9);
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.85);
     display:none;
     align-items:center;
     justify-content:center;
+    z-index:1000;
 }
+
 .modal-content{
     background:#1a1a1a;
     padding:25px;
@@ -76,6 +86,17 @@ button, select{
     width:90%;
     max-width:500px;
     text-align:left;
+    z-index:1001;
+}
+
+/* Event buttons */
+#eventOptions button{
+    display:block;
+    width:100%;
+    margin:10px 0;
+    padding:12px;
+    text-align:left;
+    cursor:pointer;
 }
 </style>
 </head>
@@ -92,7 +113,6 @@ button, select{
 </select>
 <button onclick="saveCampaign()">Save</button>
 <button onclick="loadCampaign()">Load</button>
-<button onclick="newCampaign()">New</button>
 </div>
 
 <!-- ACT -->
@@ -112,25 +132,15 @@ button, select{
 <button onclick="increaseTension()">+Tension</button>
 <button onclick="decreaseTension()">-Tension</button>
 <button onclick="resetTension()">Reset</button>
-<button onclick="drawWorldEvent()">Force Event</button>
-</div>
-
-<!-- WORLD EVENTS -->
-<div class="section">
-<h2>World Events: <span id="weCount">0</span></h2>
-<div id="weGrid"></div>
 </div>
 
 <!-- PRESENCE -->
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
-<div id="presenceBar">
-<div id="presenceFill"></div>
-</div>
+<div id="presenceBar"><div id="presenceFill"></div></div>
 <div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
-<button onclick="resetPresence()">Reset</button>
 </div>
 
 <!-- MODAL -->
@@ -146,8 +156,6 @@ button, select{
 
 <script>
 
-/* ================= STATE ================= */
-
 let tension=0;
 let tensionSinceLastWE=0;
 let weCount=0;
@@ -155,15 +163,12 @@ let presence=0;
 let currentAct="act1";
 let usedEventsByAct={act1:[],act2:[],act3:[]};
 
-/* ================= ACT ================= */
-
+/* ACT SWITCH */
 function switchAct(){
     currentAct=document.getElementById("actSelector").value;
-    resetTension();
 }
 
-/* ================= TENSION ================= */
-
+/* TENSION */
 function getThreshold(){
     if(weCount<5) return 4;
     if(weCount<10) return 3;
@@ -181,14 +186,7 @@ function increaseTension(){
 
     if(tensionSinceLastWE>=getThreshold()){
         tensionSinceLastWE=0;
-
-        let slot=document.createElement("div");
-        slot.className="weSlot";
-        document.getElementById("weGrid").appendChild(slot);
-
         weCount++;
-        document.getElementById("weCount").textContent=weCount;
-
         drawWorldEvent();
     }
 }
@@ -204,23 +202,14 @@ function decreaseTension(){
 function resetTension(){
     tension=0;
     tensionSinceLastWE=0;
-    weCount=0;
     document.getElementById("tensionRow").innerHTML="";
-    document.getElementById("weGrid").innerHTML="";
     document.getElementById("tensionValue").textContent=0;
-    document.getElementById("weCount").textContent=0;
 }
 
-/* ================= PRESENCE ================= */
-
+/* PRESENCE */
 function changePresence(v){
     presence+=v;
     if(presence<0) presence=0;
-    updatePresence();
-}
-
-function resetPresence(){
-    presence=0;
     updatePresence();
 }
 
@@ -240,26 +229,20 @@ function updatePresence(){
     else{ fill.style.background="#8b0000"; tier.textContent="Cataclysm (11+)"; }
 }
 
-/* ================= EVENT DRAW ================= */
-
+/* EVENT DRAW */
 function drawWorldEvent(){
-
     let pool=worldEventPools[currentAct];
     if(!pool||pool.length===0) return;
 
     let used=usedEventsByAct[currentAct];
-
     if(used.length>=pool.length){
         usedEventsByAct[currentAct]=[];
         used=[];
     }
 
     let available=pool.filter((_,i)=>!used.includes(i));
-    let randomIndex=Math.floor(Math.random()*available.length);
-    let event=available[randomIndex];
-
-    let realIndex=pool.indexOf(event);
-    usedEventsByAct[currentAct].push(realIndex);
+    let event=available[Math.floor(Math.random()*available.length)];
+    used.push(pool.indexOf(event));
 
     openEventModal(event);
 }
@@ -271,78 +254,43 @@ function openEventModal(event){
     let container=document.getElementById("eventOptions");
     container.innerHTML="";
 
-   event.options.forEach(o => {
+    event.options.forEach(o=>{
+        let btn=document.createElement("button");
 
-    let btn = document.createElement("button");
+        btn.innerHTML=`
+            <strong>${o.label}</strong> [${o.tag}]
+            <div style="font-size:0.85em;opacity:0.8;margin-top:4px;">
+                ${o.effect||""}
+            </div>
+        `;
 
-    btn.innerHTML = `
-        <strong>${o.label}</strong> [${o.tag}]
-        <div style="font-size:0.85em;opacity:0.8;margin-top:4px;">
-            ${o.effect || ""}
-        </div>
-    `;
+        btn.onclick=()=>{
+            document.getElementById("eventModal").style.display="none";
+        };
 
-    btn.onclick = () => {
-        addLog(event.title + " — " + o.tag);
-        document.getElementById("eventModal").style.display = "none";
-    };
-
-    container.appendChild(btn);
-
-});
+        container.appendChild(btn);
+    });
 
     document.getElementById("eventModal").style.display="flex";
 }
 
-/* ================= SAVE ================= */
-
+/* SAVE */
 function saveCampaign(){
     let slot=document.getElementById("saveSlot").value;
-    localStorage.setItem(slot,JSON.stringify({
-        tension,weCount,tensionSinceLastWE,presence,currentAct,usedEventsByAct
-    }));
+    localStorage.setItem(slot,JSON.stringify({tension,presence,currentAct}));
 }
 
 function loadCampaign(){
     let slot=document.getElementById("saveSlot").value;
     let data=localStorage.getItem(slot);
     if(!data) return;
-
     let state=JSON.parse(data);
-
     tension=state.tension||0;
-    weCount=state.weCount||0;
-    tensionSinceLastWE=state.tensionSinceLastWE||0;
     presence=state.presence||0;
     currentAct=state.currentAct||"act1";
-    usedEventsByAct=state.usedEventsByAct||usedEventsByAct;
-
     document.getElementById("actSelector").value=currentAct;
     document.getElementById("tensionValue").textContent=tension;
-    document.getElementById("presenceValue").textContent=presence;
     updatePresence();
-
-    document.getElementById("tensionRow").innerHTML="";
-    document.getElementById("weGrid").innerHTML="";
-    document.getElementById("weCount").textContent=weCount;
-
-    for(let i=0;i<tension;i++){
-        let box=document.createElement("div");
-        box.className="tensionBox";
-        document.getElementById("tensionRow").appendChild(box);
-    }
-
-    for(let i=0;i<weCount;i++){
-        let slotBox=document.createElement("div");
-        slotBox.className="weSlot";
-        document.getElementById("weGrid").appendChild(slotBox);
-    }
-}
-
-function newCampaign(){
-    if(!confirm("Start new campaign?")) return;
-    resetTension();
-    resetPresence();
 }
 
 updatePresence();
