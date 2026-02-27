@@ -160,6 +160,7 @@ button, select{
 <div class="section">
 <h2>Presence: <span id="presenceValue">0</span></h2>
 <div id="presenceBar"><div id="presenceFill"></div></div>
+<div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
 <button onclick="resetPresence()">Reset</button>
@@ -192,7 +193,18 @@ button, select{
 <button onclick="clearLog()">Clear Log</button>
 </div>
 
+<!-- MODAL -->
+<div class="modal" id="eventModal">
+<div class="modal-content">
+<h2 id="eventTitle"></h2>
+<p id="eventText"></p>
+<div id="eventOptions"></div>
+</div>
+</div>
+
 <script>
+
+/* ================= STATE ================= */
 
 let tension=0, tensionSinceLastWE=0, weCount=0;
 let breachTension=0, breachSinceLastEvent=0, breachEventCount=0;
@@ -201,6 +213,58 @@ let harmonic=0, harmonicTierLevel=0;
 let convergence=0, convergenceTierLevel=0;
 let currentAct="act1";
 let logEntries=[];
+
+/* ================= SAMPLE EVENT POOL ================= */
+/* Replace with your full event pools */
+
+const worldEventPools = {
+act1:[
+{
+title:"The World Anchor",
+text:"A titanic spike of stone plunges endlessly downward.",
+options:[
+{label:"Reinforce",tag:"Order",effect:"All factions gain 1 Relic."},
+{label:"Damage",tag:"Profit",effect:"Spawn a World Boss."}
+]
+}
+],
+act2:[],
+act3:[]
+};
+
+/* ================= EVENT SYSTEM ================= */
+
+function drawWorldEvent(){
+let pool=worldEventPools[currentAct];
+if(!pool || pool.length===0) return;
+
+let event=pool[Math.floor(Math.random()*pool.length)];
+openEventModal(event);
+}
+
+function openEventModal(event){
+document.getElementById("eventTitle").textContent=event.title;
+document.getElementById("eventText").textContent=event.text;
+
+let container=document.getElementById("eventOptions");
+container.innerHTML="";
+
+event.options.forEach(o=>{
+let btn=document.createElement("button");
+btn.innerHTML=`
+<strong>${o.label}</strong> [${o.tag}]
+<div style="font-size:0.85em;opacity:0.8;margin-top:4px;">
+${o.effect || ""}
+</div>`;
+btn.onclick=()=>{
+addLog(event.title+" — "+o.tag);
+document.getElementById("eventModal").style.display="none";
+};
+container.appendChild(btn);
+});
+
+document.getElementById("eventModal").style.display="flex";
+}
 
 /* ================= LOG ================= */
 
@@ -239,12 +303,15 @@ document.getElementById("tensionRow").appendChild(box);
 
 if(tensionSinceLastWE>=getThreshold()){
 tensionSinceLastWE=0;
+
 let slot=document.createElement("div");
 slot.className="weSlot";
 document.getElementById("weGrid").appendChild(slot);
+
 weCount++;
 document.getElementById("weCount").textContent=weCount;
-addLog("World Event Triggered.");
+
+drawWorldEvent(); // restored
 }
 }
 
@@ -264,153 +331,31 @@ document.getElementById("tensionValue").textContent=0;
 document.getElementById("weCount").textContent=0;
 }
 
-/* ================= BREACH ================= */
-
-function getBreachThreshold(){
-if(breachEventCount<5) return 4;
-if(breachEventCount<10) return 3;
-return 2;
-}
-
-function increaseBreach(){
-breachTension++;
-breachSinceLastEvent++;
-document.getElementById("breachValue").textContent=breachTension;
-
-let box=document.createElement("div");
-box.className="breachBox";
-document.getElementById("breachRow").appendChild(box);
-
-if(breachSinceLastEvent>=getBreachThreshold()){
-breachSinceLastEvent=0;
-let slot=document.createElement("div");
-slot.className="breachSlot";
-document.getElementById("breachGrid").appendChild(slot);
-breachEventCount++;
-document.getElementById("breachEventCount").textContent=breachEventCount;
-addLog("Breach Event Triggered.");
-}
-}
-
-function decreaseBreach(){
-if(breachTension<=0) return;
-breachTension--;
-document.getElementById("breachValue").textContent=breachTension;
-let row=document.getElementById("breachRow");
-if(row.lastChild) row.removeChild(row.lastChild);
-}
-
-function resetBreach(){
-breachTension=0; breachSinceLastEvent=0; breachEventCount=0;
-document.getElementById("breachRow").innerHTML="";
-document.getElementById("breachGrid").innerHTML="";
-document.getElementById("breachValue").textContent=0;
-document.getElementById("breachEventCount").textContent=0;
-}
-
-/* ================= HARMONIC ================= */
-
-function changeHarmonic(v){ harmonic+=v; if(harmonic<0) harmonic=0; updateHarmonic();}
-function resetHarmonic(){ harmonic=0; harmonicTierLevel=0; updateHarmonic();}
-
-function updateHarmonic(){
-document.getElementById("harmonicValue").textContent=harmonic;
-let fill=document.getElementById("harmonicFill");
-let tier=document.getElementById("harmonicTier");
-
-let percent=Math.min((harmonic/12)*100,100);
-fill.style.width=percent+"%";
-
-let newTier=0;
-
-if(harmonic>=10){ newTier=4; fill.style.background="#8b0000"; tier.textContent="Aligned (10+)";}
-else if(harmonic>=7){ newTier=3; fill.style.background="#e67e22"; tier.textContent="Surging (7–9)";}
-else if(harmonic>=5){ newTier=2; fill.style.background="#f1c40f"; tier.textContent="Resonant (5–6)";}
-else if(harmonic>=2){ newTier=1; fill.style.background="#2ecc71"; tier.textContent="Awakening (2–4)";}
-else{ fill.style.background="#1abc9c"; tier.textContent="Quiet (0–1)";}
-
-if(newTier>harmonicTierLevel){
-if(newTier===1) addLog("Creatures gain +2 HP.");
-if(newTier===2) addLog("The air crackles with surging energy.");
-if(newTier===3) addLog("Bosses gain +2 Retaliate.");
-if(newTier===4) addLog("Ground adjacent to Caves becomes Hazardous Terrain.");
-harmonicTierLevel=newTier;
-}
-}
-
-/* ================= CONVERGENCE ================= */
-
-function changeConvergence(v){ convergence+=v; if(convergence<0) convergence=0; updateConvergence();}
-function resetConvergence(){ convergence=0; convergenceTierLevel=0; updateConvergence();}
-
-function updateConvergence(){
-document.getElementById("convergenceValue").textContent=convergence;
-let fill=document.getElementById("convergenceFill");
-let tier=document.getElementById("convergenceTier");
-
-let percent=Math.min((convergence/12)*100,100);
-fill.style.width=percent+"%";
-
-let newTier=0;
-
-if(convergence>=10){ newTier=4; fill.style.background="#8b0000"; tier.textContent="Inevitable (10+)";}
-else if(convergence>=8){ newTier=3; fill.style.background="#e67e22"; tier.textContent="Narrowing (8–9)";}
-else if(convergence>=5){ newTier=2; fill.style.background="#f1c40f"; tier.textContent="Rippling (5–7)";}
-else if(convergence>=3){ newTier=1; fill.style.background="#2ecc71"; tier.textContent="Gathering (3–4)";}
-else{ fill.style.background="#1abc9c"; tier.textContent="Subtle (0–2)";}
-
-if(newTier>convergenceTierLevel){
-if(newTier===1) addLog("Dark clouds gather overhead.");
-if(newTier===2) addLog("Ripples of energy scatter across the sky.");
-if(newTier===3) addLog("All things point toward the future.");
-if(newTier===4) addLog("Interdimensional terrain appears along the edge of the map.");
-convergenceTierLevel=newTier;
-}
-}
-
 /* ================= PRESENCE ================= */
 
-function changePresence(v){ presence+=v; if(presence<0) presence=0; updatePresence();}
-function resetPresence(){ presence=0; updatePresence();}
-
+function changePresence(v){
+presence+=v;
+if(presence<0) presence=0;
+updatePresence();
+}
+function resetPresence(){presence=0;updatePresence();}
 function updatePresence(){
 document.getElementById("presenceValue").textContent=presence;
 let fill=document.getElementById("presenceFill");
 let percent=Math.min((presence/15)*100,100);
 fill.style.width=percent+"%";
-fill.style.background="#e74c3c";
-}
 
-/* ================= SAVE ================= */
-
-function saveCampaign(){
-let slot=document.getElementById("saveSlot").value;
-localStorage.setItem(slot,JSON.stringify({
-tension,weCount,tensionSinceLastWE,
-breachTension,breachSinceLastEvent,breachEventCount,
-presence,harmonic,convergence,harmonicTierLevel,convergenceTierLevel,currentAct
-}));
-alert("Saved.");
-}
-
-function loadCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data) return;
-let state=JSON.parse(data);
-
-Object.assign(window,state);
-
-updateHarmonic();
-updateConvergence();
-updatePresence();
-document.getElementById("tensionValue").textContent=tension;
-document.getElementById("breachValue").textContent=breachTension;
+let tierText="";
+if(presence<=2){fill.style.background="#1abc9c";tierText="Dormant (0–2)";}
+else if(presence<=4){fill.style.background="#2ecc71";tierText="Stirring (3–4)";}
+else if(presence<=6){fill.style.background="#f1c40f";tierText="Unstable (5–6)";}
+else if(presence<=8){fill.style.background="#e67e22";tierText="Hostile (7–8)";}
+else if(presence<=10){fill.style.background="#e74c3c";tierText="Critical (9–10)";}
+else{fill.style.background="#8b0000";tierText="Cataclysm (11+)";}
+document.getElementById("presenceTier").textContent=tierText;
 }
 
 updatePresence();
-updateHarmonic();
-updateConvergence();
 
 </script>
 </body>
