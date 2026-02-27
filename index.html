@@ -215,10 +215,15 @@ function decreaseTension(){
 }
 
 function resetTension(){
-    tension=0;
-    tensionSinceLastWE=0;
-    document.getElementById("tensionRow").innerHTML="";
-    document.getElementById("tensionValue").textContent=0;
+  tension = 0;
+  tensionSinceLastWE = 0;
+  weCount = 0;
+
+  document.getElementById("tensionRow").innerHTML = "";
+  document.getElementById("weGrid").innerHTML = "";
+
+  document.getElementById("tensionValue").textContent = 0;
+  document.getElementById("weCount").textContent = 0;
 }
 
 /* PRESENCE */
