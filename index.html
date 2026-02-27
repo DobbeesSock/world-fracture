@@ -16,7 +16,6 @@ body{
     text-align:center;
 }
 
-/* Sections */
 .section{
     margin:20px;
     padding:15px;
@@ -24,7 +23,6 @@ body{
     border-radius:10px;
 }
 
-/* Buttons */
 button, select{
     margin:5px;
     padding:8px 12px;
@@ -35,7 +33,6 @@ button, select{
     cursor:pointer;
 }
 
-/* Tension */
 #tensionRow{
     display:flex;
     flex-wrap:wrap;
@@ -50,7 +47,6 @@ button, select{
     background:#e74c3c;
 }
 
-/* Presence */
 #presenceBar{
     height:16px;
     width:100%;
@@ -65,7 +61,6 @@ button, select{
     transition:width .3s ease, background .3s ease;
 }
 
-/* Modal */
 .modal{
     position:fixed;
     top:0;
@@ -89,14 +84,12 @@ button, select{
     z-index:1001;
 }
 
-/* Event buttons */
 #eventOptions button{
     display:block;
     width:100%;
     margin:10px 0;
     padding:12px;
     text-align:left;
-    cursor:pointer;
 }
 </style>
 </head>
@@ -247,31 +240,46 @@ function drawWorldEvent(){
     openEventModal(event);
 }
 
+/* UPDATED EVENT MODAL WITH RESOLUTION STEP */
 function openEventModal(event){
-    document.getElementById("eventTitle").textContent=event.title;
-    document.getElementById("eventText").textContent=event.text;
 
-    let container=document.getElementById("eventOptions");
-    container.innerHTML="";
+    document.getElementById("eventTitle").textContent = event.title;
+    document.getElementById("eventText").textContent = event.text;
 
-    event.options.forEach(o=>{
-        let btn=document.createElement("button");
+    let container = document.getElementById("eventOptions");
+    container.innerHTML = "";
 
-        btn.innerHTML=`
-            <strong>${o.label}</strong> [${o.tag}]
-            <div style="font-size:0.85em;opacity:0.8;margin-top:4px;">
-                ${o.effect||""}
-            </div>
-        `;
+    event.options.forEach(o => {
 
-        btn.onclick=()=>{
-            document.getElementById("eventModal").style.display="none";
+        let btn = document.createElement("button");
+        btn.textContent = o.label + " [" + o.tag + "]";
+
+        btn.onclick = () => {
+
+            container.innerHTML = `
+                <div style="margin-top:15px;font-size:1.1em;">
+                    <strong>${o.label}</strong>
+                </div>
+
+                <div style="margin-top:10px;font-style:italic;opacity:0.9;">
+                    ${o.effect || "The world shifts..."}
+                </div>
+
+                <button id="continueBtn" style="margin-top:20px;">
+                    Continue
+                </button>
+            `;
+
+            document.getElementById("continueBtn").onclick = () => {
+                document.getElementById("eventModal").style.display = "none";
+            };
+
         };
 
         container.appendChild(btn);
     });
 
-    document.getElementById("eventModal").style.display="flex";
+    document.getElementById("eventModal").style.display = "flex";
 }
 
 /* SAVE */
