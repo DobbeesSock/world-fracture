@@ -33,6 +33,7 @@ button, select{
     cursor:pointer;
 }
 
+/* Tension */
 #tensionRow{
     display:flex;
     flex-wrap:wrap;
@@ -47,6 +48,7 @@ button, select{
     background:#e74c3c;
 }
 
+/* Presence */
 #presenceBar{
     height:16px;
     width:100%;
@@ -61,6 +63,7 @@ button, select{
     transition:width .3s ease, background .3s ease;
 }
 
+/* Modal */
 .modal{
     position:fixed;
     top:0;
@@ -90,6 +93,17 @@ button, select{
     margin:10px 0;
     padding:12px;
     text-align:left;
+}
+
+/* Log */
+#logContainer{
+    max-height:200px;
+    overflow-y:auto;
+    background:#111;
+    padding:10px;
+    border-radius:6px;
+    text-align:left;
+    font-size:0.9em;
 }
 </style>
 </head>
@@ -136,6 +150,13 @@ button, select{
 <button onclick="changePresence(-1)">-1</button>
 </div>
 
+<!-- EVENT LOG -->
+<div class="section">
+<h2>World Log</h2>
+<div id="logContainer"></div>
+<button onclick="clearLog()">Clear Log</button>
+</div>
+
 <!-- MODAL -->
 <div class="modal" id="eventModal">
 <div class="modal-content">
@@ -155,6 +176,7 @@ let weCount=0;
 let presence=0;
 let currentAct="act1";
 let usedEventsByAct={act1:[],act2:[],act3:[]};
+let logEntries=[];
 
 /* ACT SWITCH */
 function switchAct(){
@@ -240,7 +262,7 @@ function drawWorldEvent(){
     openEventModal(event);
 }
 
-/* UPDATED EVENT MODAL WITH RESOLUTION STEP */
+/* EVENT MODAL WITH LOGGING */
 function openEventModal(event){
 
     document.getElementById("eventTitle").textContent = event.title;
@@ -255,6 +277,8 @@ function openEventModal(event){
         btn.textContent = o.label + " [" + o.tag + "]";
 
         btn.onclick = () => {
+
+            addLog(event.title + " → " + o.label + " (" + o.tag + ")");
 
             container.innerHTML = `
                 <div style="margin-top:15px;font-size:1.1em;">
@@ -282,10 +306,33 @@ function openEventModal(event){
     document.getElementById("eventModal").style.display = "flex";
 }
 
+/* LOG SYSTEM */
+function addLog(entry){
+    let time = new Date().toLocaleTimeString();
+    logEntries.unshift("[" + time + "] " + entry);
+    renderLog();
+}
+
+function renderLog(){
+    let container = document.getElementById("logContainer");
+    container.innerHTML = "";
+
+    logEntries.forEach(e=>{
+        let div=document.createElement("div");
+        div.textContent=e;
+        container.appendChild(div);
+    });
+}
+
+function clearLog(){
+    logEntries=[];
+    renderLog();
+}
+
 /* SAVE */
 function saveCampaign(){
     let slot=document.getElementById("saveSlot").value;
-    localStorage.setItem(slot,JSON.stringify({tension,presence,currentAct}));
+    localStorage.setItem(slot,JSON.stringify({tension,presence,currentAct,logEntries}));
 }
 
 function loadCampaign(){
@@ -296,9 +343,11 @@ function loadCampaign(){
     tension=state.tension||0;
     presence=state.presence||0;
     currentAct=state.currentAct||"act1";
+    logEntries=state.logEntries||[];
     document.getElementById("actSelector").value=currentAct;
     document.getElementById("tensionValue").textContent=tension;
     updatePresence();
+    renderLog();
 }
 
 updatePresence();
