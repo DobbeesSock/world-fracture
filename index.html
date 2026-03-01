@@ -44,16 +44,33 @@ button{
     background:#9b59b6;
     border-radius:3px;
 }
-#presenceBar,#harmonicBar,#convergenceBar{
+#presenceBar, #harmonicBar, #convergenceBar{
     height:16px;
     background:#333;
     border-radius:8px;
     overflow:hidden;
+    width:100%;
 }
-#presenceFill,#harmonicFill,#convergenceFill{
+
+#presenceFill{
     height:100%;
     width:0%;
-    transition:0.3s;
+    background:#e74c3c;
+    transition:width .3s ease;
+}
+
+#harmonicFill{
+    height:100%;
+    width:0%;
+    background:#3498db;
+    transition:width .3s ease;
+}
+
+#convergenceFill{
+    height:100%;
+    width:0%;
+    background:#9b59b6;
+    transition:width .3s ease;
 }
 .modal{
     position:fixed;
@@ -160,8 +177,7 @@ let breach=0;
 let logEntries=[];
 
 /* ================= EVENT POOL ================= */
-
-const worldEventPools={
+const worldEventPools = { ... };
 act1:[
 {
 title:"The World Anchor",
@@ -387,6 +403,21 @@ localStorage.clear();
 location.reload();
 }
 
+...
+<div class="modal" id="eventModal">
+...
+</div>
+
+/* ================= FUNCTIONS ================= */
+function drawWorldEvent(){ ... }
+function increaseTension(){ ... }
+function changePresence(v){ ... }
+function changeHarmonic(v){ ... }
+function changeConvergence(v){ ... }
+function increaseBreach(){ ... }
+/* etc */
+
 </script>
+
 </body>
 </html>
