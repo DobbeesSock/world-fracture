@@ -178,7 +178,7 @@ let convergence = 0;
 let breach = 0;
 let logEntries = [];
 
-/* ================= EVENT POOL ================= */
+/* ================= EVENT POOLS ================= */
 
 const worldEventPools = {
   act1: [
@@ -193,10 +193,37 @@ const worldEventPools = {
   ]
 };
 
+const breachEventPools = {
+  act2: [
+    {
+      title: "A Tear in the Veil",
+      text: "Reality thins along the eastern sky. Something watches from beyond.",
+      options: [
+        { label: "Stabilize the Tear", tag: "Containment", effect: "All factions lose 5 Gold. Breach -1." },
+        { label: "Study the Rift", tag: "Curiosity", effect: "Gain 1 Fragment. Harmonic +1." }
+      ]
+    },
+    {
+      title: "Mechanical Shadows",
+      text: "Angular silhouettes flicker at the edge of vision.",
+      options: [
+        { label: "Prepare Defenses", tag: "Defense", effect: "All factions gain +5 Food." },
+        { label: "Pursue Them", tag: "Risk", effect: "Spawn Interdimensional Stalker." }
+      ]
+    }
+  ]
+};
+
 /* ================= EVENT SYSTEM ================= */
 
 function drawWorldEvent() {
   let pool = worldEventPools.act1;
+  let event = pool[Math.floor(Math.random() * pool.length)];
+  openEventModal(event);
+}
+
+function drawBreachEvent() {
+  let pool = breachEventPools.act2;
   let event = pool[Math.floor(Math.random() * pool.length)];
   openEventModal(event);
 }
@@ -250,7 +277,6 @@ function decreaseTension() {
   if (tension <= 0) return;
   tension--;
   document.getElementById("tensionValue").textContent = tension;
-
   let row = document.getElementById("tensionRow");
   if (row.lastChild) row.removeChild(row.lastChild);
 }
@@ -329,13 +355,16 @@ function increaseBreach() {
   let box = document.createElement("div");
   box.className = "breachBox";
   document.getElementById("breachRow").appendChild(box);
+
+  if (breach % 3 === 0) {
+    drawBreachEvent();
+  }
 }
 
 function decreaseBreach() {
   if (breach <= 0) return;
   breach--;
   document.getElementById("breachValue").textContent = breach;
-
   let row = document.getElementById("breachRow");
   if (row.lastChild) row.removeChild(row.lastChild);
 }
@@ -367,36 +396,32 @@ function renderLog() {
 function clearLog() {
   logEntries = [];
   renderLog();
-}/* ================= SAVE ================= */
+}
+
+/* ================= SAVE ================= */
 
 function saveCampaign(){
-let slot=document.getElementById("saveSlot").value;
-localStorage.setItem(slot,JSON.stringify({tension,presence,harmonic,convergence,breach}));
-alert("Saved");
+  let slot=document.getElementById("saveSlot").value;
+  localStorage.setItem(slot,JSON.stringify({tension,presence,harmonic,convergence,breach}));
+  alert("Saved");
 }
 
 function loadCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data) return;
-let s=JSON.parse(data);
-tension=s.tension||0;
-presence=s.presence||0;
-harmonic=s.harmonic||0;
-convergence=s.convergence||0;
-breach=s.breach||0;
-location.reload();
+  let slot=document.getElementById("saveSlot").value;
+  let data=localStorage.getItem(slot);
+  if(!data) return;
+  let s=JSON.parse(data);
+  tension=s.tension||0;
+  presence=s.presence||0;
+  harmonic=s.harmonic||0;
+  convergence=s.convergence||0;
+  breach=s.breach||0;
+  location.reload();
 }
 
 function newCampaign(){
-localStorage.clear();
-location.reload();
-}
-
-
-function newCampaign(){
-localStorage.clear();
-location.reload();
+  localStorage.clear();
+  location.reload();
 }
 
 </script>
