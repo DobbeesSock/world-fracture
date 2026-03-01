@@ -1,415 +1,200 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>World Fracture</title>
-
-<style>
-body{
-    background:#111;
-    color:#e6d3a3;
-    font-family:serif;
-    text-align:center;
-}
-.section{
-    margin:20px;
-    padding:15px;
-    background:#1a1a1a;
-    border-radius:8px;
-}
-button{
-    margin:5px;
-    padding:6px 12px;
-    background:#3a2f1b;
-    color:#e6d3a3;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;
-}
-#tensionRow,#breachRow{
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:4px;
-}
-.tensionBox{
-    width:18px;
-    height:18px;
-    background:#e74c3c;
-    border-radius:3px;
-}
-.breachBox{
-    width:18px;
-    height:18px;
-    background:#9b59b6;
-    border-radius:3px;
-}
-#presenceBar, #harmonicBar, #convergenceBar{
-    height:16px;
-    background:#333;
-    border-radius:8px;
-    overflow:hidden;
-    width:100%;
-}
-
-#presenceFill{
-    height:100%;
-    width:0%;
-    background:#e74c3c;
-    transition:width .3s ease;
-}
-
-#harmonicFill{
-    height:100%;
-    width:0%;
-    background:#3498db;
-    transition:width .3s ease;
-}
-
-#convergenceFill{
-    height:100%;
-    width:0%;
-    background:#9b59b6;
-    transition:width .3s ease;
-}
-.modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.85);
-    display:none;
-    align-items:center;
-    justify-content:center;
-}
-.modal-content{
-    background:#1a1a1a;
-    padding:20px;
-    border-radius:10px;
-    max-width:500px;
-    width:90%;
-}
-#logContainer{
-    max-height:200px;
-    overflow-y:auto;
-    text-align:left;
-    background:#111;
-    padding:10px;
-    border-radius:6px;
-}
-</style>
-</head>
-<body>
-
-<h1>WORLD FRACTURE</h1>
-
-<div class="section">
-<select id="saveSlot">
-<option value="slot1">Slot 1</option>
-<option value="slot2">Slot 2</option>
-<option value="slot3">Slot 3</option>
-</select>
-<button onclick="saveCampaign()">Save</button>
-<button onclick="loadCampaign()">Load</button>
-<button onclick="newCampaign()">New</button>
-</div>
-
-<div class="section">
-<h2>World Tension: <span id="tensionValue">0</span></h2>
-<div id="tensionRow"></div>
-<button onclick="increaseTension()">+1</button>
-<button onclick="resetTension()">Reset</button>
-</div>
-
-<div class="section">
-<h2>Presence: <span id="presenceValue">0</span></h2>
-<div id="presenceBar"><div id="presenceFill"></div></div>
-<div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
-<button onclick="changePresence(1)">+1</button>
-<button onclick="changePresence(-1)">-1</button>
-</div>
-
-<div class="section">
-<h2>Harmonic: <span id="harmonicValue">0</span></h2>
-<div id="harmonicBar"><div id="harmonicFill"></div></div>
-<div><span id="harmonicTier">Quiet</span></div>
-<button onclick="changeHarmonic(1)">+1</button>
-<button onclick="changeHarmonic(-1)">-1</button>
-</div>
-
-<div class="section">
-<h2>Convergence: <span id="convergenceValue">0</span></h2>
-<div id="convergenceBar"><div id="convergenceFill"></div></div>
-<div><span id="convergenceTier">Subtle</span></div>
-<button onclick="changeConvergence(1)">+1</button>
-<button onclick="changeConvergence(-1)">-1</button>
-</div>
-
-<div class="section">
-<h2>Breach Tension: <span id="breachValue">0</span></h2>
-<div id="breachRow"></div>
-<button onclick="increaseBreach()">+1</button>
-<button onclick="resetBreach()">Reset</button>
-</div>
-
-<div class="section">
-<h2>Log</h2>
-<div id="logContainer"></div>
-<button onclick="clearLog()">Clear</button>
-</div>
-
-<div class="modal" id="eventModal">
-<div class="modal-content">
-<h2 id="eventTitle"></h2>
-<p id="eventText"></p>
-<div id="eventOptions"></div>
-</div>
-</div>
-
-<script>
-
 /* ================= STATE ================= */
 
-let tension=0;
-let tensionSinceLastWE=0;
-let presence=0;
-let harmonic=0;
-let convergence=0;
-let breach=0;
-let logEntries=[];
-
+let tension = 0;
+let tensionSinceLastWE = 0;
+let presence = 0;
+let harmonic = 0;
+let convergence = 0;
+let breach = 0;
+let logEntries = [];
 
 /* ================= EVENT POOL ================= */
+
 const worldEventPools = {
-act1:[
-{
-title:"The World Anchor",
-text:"A titanic spike of stone plunges endlessly downward.",
-options:[
-{label:"Reinforce",tag:"Order",effect:"All factions gain 1 Relic."},
-{label:"Damage",tag:"Profit",effect:"Spawn a World Boss."}
-]
-}
-]
+  act1: [
+    {
+      title: "The World Anchor",
+      text: "A titanic spike of stone plunges endlessly downward.",
+      options: [
+        { label: "Reinforce", tag: "Order", effect: "All factions gain 1 Relic." },
+        { label: "Damage", tag: "Profit", effect: "Spawn a World Boss." }
+      ]
+    }
+  ]
 };
 
-function drawWorldEvent(){
-let pool=worldEventPools.act1;
-let event=pool[Math.floor(Math.random()*pool.length)];
-openEventModal(event);
+/* ================= EVENT SYSTEM ================= */
+
+function drawWorldEvent() {
+  let pool = worldEventPools.act1;
+  let event = pool[Math.floor(Math.random() * pool.length)];
+  openEventModal(event);
 }
 
-function openEventModal(event){
-document.getElementById("eventTitle").textContent=event.title;
-document.getElementById("eventText").textContent=event.text;
+function openEventModal(event) {
+  document.getElementById("eventTitle").textContent = event.title;
+  document.getElementById("eventText").textContent = event.text;
 
-let container=document.getElementById("eventOptions");
-container.innerHTML="";
+  let container = document.getElementById("eventOptions");
+  container.innerHTML = "";
 
-event.options.forEach(o=>{
-let btn=document.createElement("button");
-btn.innerHTML=`<strong>${o.label}</strong> [${o.tag}]`;
-btn.onclick=()=>{
-container.innerHTML=`
-<h3>Outcome</h3>
-<p>${o.effect}</p>
-<button onclick="closeModal()">Continue</button>
-`;
-addLog(event.title+" — "+o.tag);
-};
-container.appendChild(btn);
-});
+  event.options.forEach(o => {
+    let btn = document.createElement("button");
+    btn.innerHTML = `<strong>${o.label}</strong><br><small>${o.tag}</small>`;
+    btn.onclick = () => {
+      container.innerHTML = `
+        <h3>Outcome</h3>
+        <p>${o.effect}</p>
+        <button onclick="closeModal()">Continue</button>
+      `;
+      addLog(event.title + " — " + o.tag);
+    };
+    container.appendChild(btn);
+  });
 
-document.getElementById("eventModal").style.display="flex";
+  document.getElementById("eventModal").style.display = "flex";
 }
 
-function closeModal(){
-document.getElementById("eventModal").style.display="none";
+function closeModal() {
+  document.getElementById("eventModal").style.display = "none";
 }
 
 /* ================= WORLD TENSION ================= */
 
-function increaseTension(){
-tension++;
-tensionSinceLastWE++;
-document.getElementById("tensionValue").textContent=tension;
+function increaseTension() {
+  tension++;
+  tensionSinceLastWE++;
+  document.getElementById("tensionValue").textContent = tension;
 
-let box=document.createElement("div");
-box.className="tensionBox";
-document.getElementById("tensionRow").appendChild(box);
+  let box = document.createElement("div");
+  box.className = "tensionBox";
+  document.getElementById("tensionRow").appendChild(box);
 
-if(tensionSinceLastWE>=4){
-tensionSinceLastWE=0;
-drawWorldEvent();
-}
-}
-
-function decreaseTension(){
-if(tension<=0) return;
-tension--;
-document.getElementById("tensionValue").textContent=tension;
-
-let row=document.getElementById("tensionRow");
-if(row.lastChild) row.removeChild(row.lastChild);
+  if (tensionSinceLastWE >= 4) {
+    tensionSinceLastWE = 0;
+    drawWorldEvent();
+  }
 }
 
-function resetTension(){
-tension=0;
-tensionSinceLastWE=0;
-document.getElementById("tensionValue").textContent=0;
-document.getElementById("tensionRow").innerHTML="";
+function decreaseTension() {
+  if (tension <= 0) return;
+  tension--;
+  document.getElementById("tensionValue").textContent = tension;
+
+  let row = document.getElementById("tensionRow");
+  if (row.lastChild) row.removeChild(row.lastChild);
+}
+
+function resetTension() {
+  tension = 0;
+  tensionSinceLastWE = 0;
+  document.getElementById("tensionValue").textContent = 0;
+  document.getElementById("tensionRow").innerHTML = "";
 }
 
 /* ================= PRESENCE ================= */
 
-function changePresence(v){
-presence+=v;
-if(presence<0) presence=0;
+function changePresence(v) {
+  presence += v;
+  if (presence < 0) presence = 0;
 
-document.getElementById("presenceValue").textContent=presence;
+  document.getElementById("presenceValue").textContent = presence;
+  document.getElementById("presenceFill").style.width =
+    Math.min((presence / 15) * 100, 100) + "%";
 
-let fill=document.getElementById("presenceFill");
-let percent=Math.min((presence/15)*100,100);
-fill.style.width=percent+"%";
+  let tier = "Dormant (0–2)";
+  if (presence >= 3) tier = "Stirring (3–4)";
+  if (presence >= 5) tier = "Unstable (5–6)";
+  if (presence >= 7) tier = "Hostile (7–8)";
+  if (presence >= 9) tier = "Critical (9–10)";
+  if (presence >= 11) tier = "Cataclysm (11+)";
 
-let tier="Dormant (0–2)";
-if(presence>=3) tier="Stirring (3–4)";
-if(presence>=5) tier="Unstable (5–6)";
-if(presence>=7) tier="Hostile (7–8)";
-if(presence>=9) tier="Critical (9–10)";
-if(presence>=11) tier="Cataclysm (11+)";
-
-document.getElementById("presenceTier").textContent=tier;
+  document.getElementById("presenceTier").textContent = tier;
 }
 
 /* ================= HARMONIC ================= */
 
-function changeHarmonic(v){
-harmonic+=v;
-if(harmonic<0) harmonic=0;
+function changeHarmonic(v) {
+  harmonic += v;
+  if (harmonic < 0) harmonic = 0;
 
-document.getElementById("harmonicValue").textContent=harmonic;
+  document.getElementById("harmonicValue").textContent = harmonic;
+  document.getElementById("harmonicFill").style.width =
+    Math.min((harmonic / 12) * 100, 100) + "%";
 
-let percent=Math.min((harmonic/12)*100,100);
-document.getElementById("harmonicFill").style.width=percent+"%";
+  let tier = "Quiet";
+  if (harmonic >= 2) tier = "Vibrating";
+  if (harmonic >= 5) tier = "Surging";
+  if (harmonic >= 7) tier = "Overtuned";
+  if (harmonic >= 10) tier = "Resonant Collapse";
 
-let tier="Quiet";
-if(harmonic>=2) tier="Vibrating";
-if(harmonic>=5) tier="Surging";
-if(harmonic>=7) tier="Overtuned";
-if(harmonic>=10) tier="Resonant Collapse";
-
-document.getElementById("harmonicTier").textContent=tier;
-
-if(harmonic==2) addLog("Creatures gain +2 HP.");
-if(harmonic==5) addLog("The air crackles with energy.");
-if(harmonic==7) addLog("Bosses gain +2 Retaliate.");
-if(harmonic==10) addLog("Ground near caves becomes hazardous.");
+  document.getElementById("harmonicTier").textContent = tier;
 }
 
 /* ================= CONVERGENCE ================= */
 
-function changeConvergence(v){
-convergence+=v;
-if(convergence<0) convergence=0;
+function changeConvergence(v) {
+  convergence += v;
+  if (convergence < 0) convergence = 0;
 
-document.getElementById("convergenceValue").textContent=convergence;
+  document.getElementById("convergenceValue").textContent = convergence;
+  document.getElementById("convergenceFill").style.width =
+    Math.min((convergence / 12) * 100, 100) + "%";
 
-let percent=Math.min((convergence/12)*100,100);
-document.getElementById("convergenceFill").style.width=percent+"%";
+  let tier = "Subtle";
+  if (convergence >= 3) tier = "Gathering";
+  if (convergence >= 5) tier = "Distorted";
+  if (convergence >= 8) tier = "Aligned";
+  if (convergence >= 10) tier = "Manifest";
 
-let tier="Subtle";
-if(convergence>=3) tier="Gathering";
-if(convergence>=5) tier="Distorted";
-if(convergence>=8) tier="Aligned";
-if(convergence>=10) tier="Manifest";
-
-document.getElementById("convergenceTier").textContent=tier;
-
-if(convergence==3) addLog("Dark clouds gather overhead.");
-if(convergence==5) addLog("Ripples scatter across the sky.");
-if(convergence==8) addLog("All things point towards the future.");
-if(convergence==10) addLog("Interdimensional terrain forms along the edge.");
+  document.getElementById("convergenceTier").textContent = tier;
 }
 
 /* ================= BREACH ================= */
 
-function increaseBreach(){
-breach++;
-document.getElementById("breachValue").textContent=breach;
+function increaseBreach() {
+  breach++;
+  document.getElementById("breachValue").textContent = breach;
 
-let box=document.createElement("div");
-box.className="breachBox";
-document.getElementById("breachRow").appendChild(box);
+  let box = document.createElement("div");
+  box.className = "breachBox";
+  document.getElementById("breachRow").appendChild(box);
 }
 
-function decreaseBreach(){
-if(breach<=0) return;
-breach--;
-document.getElementById("breachValue").textContent=breach;
+function decreaseBreach() {
+  if (breach <= 0) return;
+  breach--;
+  document.getElementById("breachValue").textContent = breach;
 
-let row=document.getElementById("breachRow");
-if(row.lastChild) row.removeChild(row.lastChild);
+  let row = document.getElementById("breachRow");
+  if (row.lastChild) row.removeChild(row.lastChild);
 }
 
-function resetBreach(){
-breach=0;
-document.getElementById("breachValue").textContent=0;
-document.getElementById("breachRow").innerHTML="";
+function resetBreach() {
+  breach = 0;
+  document.getElementById("breachValue").textContent = 0;
+  document.getElementById("breachRow").innerHTML = "";
 }
 
 /* ================= LOG ================= */
 
-function addLog(msg){
-let time=new Date().toLocaleTimeString();
-logEntries.unshift("["+time+"] "+msg);
-renderLog();
+function addLog(msg) {
+  let time = new Date().toLocaleTimeString();
+  logEntries.unshift("[" + time + "] " + msg);
+  renderLog();
 }
 
-function renderLog(){
-let c=document.getElementById("logContainer");
-c.innerHTML="";
-logEntries.forEach(e=>{
-let d=document.createElement("div");
-d.textContent=e;
-c.appendChild(d);
-});
+function renderLog() {
+  let c = document.getElementById("logContainer");
+  c.innerHTML = "";
+  logEntries.forEach(e => {
+    let d = document.createElement("div");
+    d.textContent = e;
+    c.appendChild(d);
+  });
 }
 
-function clearLog(){
-logEntries=[];
-renderLog();
+function clearLog() {
+  logEntries = [];
+  renderLog();
 }
-/* ================= SAVE ================= */
-
-function saveCampaign(){
-let slot=document.getElementById("saveSlot").value;
-localStorage.setItem(slot,JSON.stringify({tension,presence,harmonic,convergence,breach}));
-alert("Saved");
-}
-
-function loadCampaign(){
-let slot=document.getElementById("saveSlot").value;
-let data=localStorage.getItem(slot);
-if(!data) return;
-let s=JSON.parse(data);
-tension=s.tension||0;
-presence=s.presence||0;
-harmonic=s.harmonic||0;
-convergence=s.convergence||0;
-breach=s.breach||0;
-location.reload();
-}
-
-function newCampaign(){
-localStorage.clear();
-location.reload();
-}
-
-
-function newCampaign(){
-localStorage.clear();
-location.reload();
-}
-
-</script>
-</body>
-</html>
