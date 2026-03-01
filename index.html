@@ -1,3 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>World Fracture</title>
+
+<style>
+body{
+    background:#111;
+    color:#e6d3a3;
+    font-family:serif;
+    text-align:center;
+}
+.section{
+    margin:20px;
+    padding:15px;
+    background:#1a1a1a;
+    border-radius:8px;
+}
+button{
+    margin:5px;
+    padding:6px 12px;
+    background:#3a2f1b;
+    color:#e6d3a3;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+#tensionRow,#breachRow{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:4px;
+}
+.tensionBox{
+    width:18px;
+    height:18px;
+    background:#e74c3c;
+    border-radius:3px;
+}
+.breachBox{
+    width:18px;
+    height:18px;
+    background:#9b59b6;
+    border-radius:3px;
+}
+#presenceBar, #harmonicBar, #convergenceBar{
+    height:16px;
+    background:#333;
+    border-radius:8px;
+    overflow:hidden;
+    width:100%;
+}
+
+#presenceFill{
+    height:100%;
+    width:0%;
+    background:#e74c3c;
+    transition:width .3s ease;
+}
+
+#harmonicFill{
+    height:100%;
+    width:0%;
+    background:#3498db;
+    transition:width .3s ease;
+}
+
+#convergenceFill{
+    height:100%;
+    width:0%;
+    background:#9b59b6;
+    transition:width .3s ease;
+}
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+.modal-content{
+    background:#1a1a1a;
+    padding:20px;
+    border-radius:10px;
+    max-width:500px;
+    width:90%;
+}
+#logContainer{
+    max-height:200px;
+    overflow-y:auto;
+    text-align:left;
+    background:#111;
+    padding:10px;
+    border-radius:6px;
+}
+</style>
+</head>
+<body>
+
+<h1>WORLD FRACTURE</h1>
+
+<div class="section">
+<select id="saveSlot">
+<option value="slot1">Slot 1</option>
+<option value="slot2">Slot 2</option>
+<option value="slot3">Slot 3</option>
+</select>
+<button onclick="saveCampaign()">Save</button>
+<button onclick="loadCampaign()">Load</button>
+<button onclick="newCampaign()">New</button>
+</div>
+
+<div class="section">
+<h2>World Tension: <span id="tensionValue">0</span></h2>
+<div id="tensionRow"></div>
+<button onclick="increaseTension()">+1</button>
+<button onclick="resetTension()">Reset</button>
+</div>
+
+<div class="section">
+<h2>Presence: <span id="presenceValue">0</span></h2>
+<div id="presenceBar"><div id="presenceFill"></div></div>
+<div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
+<button onclick="changePresence(1)">+1</button>
+<button onclick="changePresence(-1)">-1</button>
+</div>
+
+<div class="section">
+<h2>Harmonic: <span id="harmonicValue">0</span></h2>
+<div id="harmonicBar"><div id="harmonicFill"></div></div>
+<div><span id="harmonicTier">Quiet</span></div>
+<button onclick="changeHarmonic(1)">+1</button>
+<button onclick="changeHarmonic(-1)">-1</button>
+</div>
+
+<div class="section">
+<h2>Convergence: <span id="convergenceValue">0</span></h2>
+<div id="convergenceBar"><div id="convergenceFill"></div></div>
+<div><span id="convergenceTier">Subtle</span></div>
+<button onclick="changeConvergence(1)">+1</button>
+<button onclick="changeConvergence(-1)">-1</button>
+</div>
+
+<div class="section">
+<h2>Breach Tension: <span id="breachValue">0</span></h2>
+<div id="breachRow"></div>
+<button onclick="increaseBreach()">+1</button>
+<button onclick="resetBreach()">Reset</button>
+</div>
+
+<div class="section">
+<h2>Log</h2>
+<div id="logContainer"></div>
+<button onclick="clearLog()">Clear</button>
+</div>
+
+<div class="modal" id="eventModal">
+<div class="modal-content">
+<h2 id="eventTitle"></h2>
+<p id="eventText"></p>
+<div id="eventOptions"></div>
+</div>
+</div>
+
+<script>
+
 /* ================= STATE ================= */
 
 let tension = 0;
@@ -197,4 +365,38 @@ function renderLog() {
 function clearLog() {
   logEntries = [];
   renderLog();
+}/* ================= SAVE ================= */
+
+function saveCampaign(){
+let slot=document.getElementById("saveSlot").value;
+localStorage.setItem(slot,JSON.stringify({tension,presence,harmonic,convergence,breach}));
+alert("Saved");
 }
+
+function loadCampaign(){
+let slot=document.getElementById("saveSlot").value;
+let data=localStorage.getItem(slot);
+if(!data) return;
+let s=JSON.parse(data);
+tension=s.tension||0;
+presence=s.presence||0;
+harmonic=s.harmonic||0;
+convergence=s.convergence||0;
+breach=s.breach||0;
+location.reload();
+}
+
+function newCampaign(){
+localStorage.clear();
+location.reload();
+}
+
+
+function newCampaign(){
+localStorage.clear();
+location.reload();
+}
+
+</script>
+</body>
+</html>
