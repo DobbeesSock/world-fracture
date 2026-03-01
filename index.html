@@ -225,6 +225,15 @@ drawWorldEvent();
 }
 }
 
+function decreaseTension(){
+if(tension<=0) return;
+tension--;
+document.getElementById("tensionValue").textContent=tension;
+
+let row=document.getElementById("tensionRow");
+if(row.lastChild) row.removeChild(row.lastChild);
+}
+
 function resetTension(){
 tension=0;
 tensionSinceLastWE=0;
@@ -237,9 +246,12 @@ document.getElementById("tensionRow").innerHTML="";
 function changePresence(v){
 presence+=v;
 if(presence<0) presence=0;
+
 document.getElementById("presenceValue").textContent=presence;
+
 let fill=document.getElementById("presenceFill");
-fill.style.width=(presence*10)+"%";
+let percent=Math.min((presence/15)*100,100);
+fill.style.width=percent+"%";
 
 let tier="Dormant (0–2)";
 if(presence>=3) tier="Stirring (3–4)";
@@ -247,6 +259,7 @@ if(presence>=5) tier="Unstable (5–6)";
 if(presence>=7) tier="Hostile (7–8)";
 if(presence>=9) tier="Critical (9–10)";
 if(presence>=11) tier="Cataclysm (11+)";
+
 document.getElementById("presenceTier").textContent=tier;
 }
 
@@ -255,13 +268,24 @@ document.getElementById("presenceTier").textContent=tier;
 function changeHarmonic(v){
 harmonic+=v;
 if(harmonic<0) harmonic=0;
+
 document.getElementById("harmonicValue").textContent=harmonic;
-document.getElementById("harmonicFill").style.width=(harmonic*10)+"%";
+
+let percent=Math.min((harmonic/12)*100,100);
+document.getElementById("harmonicFill").style.width=percent+"%";
+
+let tier="Quiet";
+if(harmonic>=2) tier="Vibrating";
+if(harmonic>=5) tier="Surging";
+if(harmonic>=7) tier="Overtuned";
+if(harmonic>=10) tier="Resonant Collapse";
+
+document.getElementById("harmonicTier").textContent=tier;
 
 if(harmonic==2) addLog("Creatures gain +2 HP.");
 if(harmonic==5) addLog("The air crackles with energy.");
 if(harmonic==7) addLog("Bosses gain +2 Retaliate.");
-if(harmonic>=10) addLog("Ground near caves becomes hazardous.");
+if(harmonic==10) addLog("Ground near caves becomes hazardous.");
 }
 
 /* ================= CONVERGENCE ================= */
@@ -269,13 +293,24 @@ if(harmonic>=10) addLog("Ground near caves becomes hazardous.");
 function changeConvergence(v){
 convergence+=v;
 if(convergence<0) convergence=0;
-document.getElementById("convergenceValue").textContent=convergence;
-document.getElementById("convergenceFill").style.width=(convergence*10)+"%";
 
-if(convergence==3) addLog("Dark clouds gather.");
+document.getElementById("convergenceValue").textContent=convergence;
+
+let percent=Math.min((convergence/12)*100,100);
+document.getElementById("convergenceFill").style.width=percent+"%";
+
+let tier="Subtle";
+if(convergence>=3) tier="Gathering";
+if(convergence>=5) tier="Distorted";
+if(convergence>=8) tier="Aligned";
+if(convergence>=10) tier="Manifest";
+
+document.getElementById("convergenceTier").textContent=tier;
+
+if(convergence==3) addLog("Dark clouds gather overhead.");
 if(convergence==5) addLog("Ripples scatter across the sky.");
 if(convergence==8) addLog("All things point towards the future.");
-if(convergence>=10) addLog("Interdimensional terrain appears.");
+if(convergence==10) addLog("Interdimensional terrain forms along the edge.");
 }
 
 /* ================= BREACH ================= */
@@ -283,9 +318,19 @@ if(convergence>=10) addLog("Interdimensional terrain appears.");
 function increaseBreach(){
 breach++;
 document.getElementById("breachValue").textContent=breach;
+
 let box=document.createElement("div");
 box.className="breachBox";
 document.getElementById("breachRow").appendChild(box);
+}
+
+function decreaseBreach(){
+if(breach<=0) return;
+breach--;
+document.getElementById("breachValue").textContent=breach;
+
+let row=document.getElementById("breachRow");
+if(row.lastChild) row.removeChild(row.lastChild);
 }
 
 function resetBreach(){
@@ -316,7 +361,6 @@ function clearLog(){
 logEntries=[];
 renderLog();
 }
-
 /* ================= SAVE ================= */
 
 function saveCampaign(){
