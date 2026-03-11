@@ -181,6 +181,8 @@ let convergence = 0;
 let breach = 0;
 let logEntries = [];
 
+let breachEventDeck = [];
+
 /* ================= EVENT POOLS ================= */
 
 const worldEventPools = {
@@ -688,9 +690,23 @@ function drawWorldEvent() {
 }
 
 function drawBreachEvent() {
-  let pool = breachEventPools.act2;
-  let event = pool[Math.floor(Math.random() * pool.length)];
+
+  if(breachEventDeck.length === 0){
+
+    breachEventDeck = [...breachEventPools.act2];
+
+    // shuffle deck
+    for(let i = breachEventDeck.length - 1; i > 0; i--){
+      let j = Math.floor(Math.random() * (i + 1));
+      [breachEventDeck[i], breachEventDeck[j]] = [breachEventDeck[j], breachEventDeck[i]];
+    }
+
+  }
+
+  let event = breachEventDeck.pop();
+
   openEventModal(event);
+
 }
 
 function openEventModal(event) {
