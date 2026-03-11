@@ -126,6 +126,7 @@ button{
 <div>Tier: <span id="presenceTier">Dormant (0–2)</span></div>
 <button onclick="changePresence(1)">+1</button>
 <button onclick="changePresence(-1)">-1</button>
+<button onclick="resetPresence()">Reset</button>
 </div>
 
 <div class="section">
@@ -134,6 +135,7 @@ button{
 <div><span id="harmonicTier">Quiet</span></div>
 <button onclick="changeHarmonic(1)">+1</button>
 <button onclick="changeHarmonic(-1)">-1</button>
+<button onclick="resetHarmonic()">Reset</button>
 </div>
 
 <div class="section">
@@ -142,6 +144,7 @@ button{
 <div><span id="convergenceTier">Subtle</span></div>
 <button onclick="changeConvergence(1)">+1</button>
 <button onclick="changeConvergence(-1)">-1</button>
+<button onclick="resetConvergence()">Reset</button>
 </div>
 
 <div class="section">
@@ -398,6 +401,30 @@ function clearLog() {
   renderLog();
 }
 
+/* ================= RESET SYSTEMS ================= */
+
+function resetPresence(){
+  presence = 0;
+  document.getElementById("presenceValue").textContent = 0;
+  document.getElementById("presenceFill").style.width = "0%";
+  document.getElementById("presenceTier").textContent = "Dormant (0–2)";
+}
+
+function resetHarmonic(){
+  harmonic = 0;
+  document.getElementById("harmonicValue").textContent = 0;
+  document.getElementById("harmonicFill").style.width = "0%";
+  document.getElementById("harmonicTier").textContent = "Quiet";
+}
+
+function resetConvergence(){
+  convergence = 0;
+  document.getElementById("convergenceValue").textContent = 0;
+  document.getElementById("convergenceFill").style.width = "0%";
+  document.getElementById("convergenceTier").textContent = "Subtle";
+}
+
+/* ================= SAVE ================= */
 /* ================= SAVE ================= */
 
 function saveCampaign(){
