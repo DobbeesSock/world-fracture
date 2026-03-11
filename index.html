@@ -495,6 +495,190 @@ options:[
 ]
 };
 
+const breachEventPools = {
+  act2: [
+{
+title:"The Shifting Geometry",
+text:"Angles fold where no angles should exist. The land briefly obeys alien mathematics.",
+options:[
+{label:"Observe",tag:"Study",effect:"Harmonic +1."},
+{label:"Disrupt",tag:"Force",effect:"Presence +1."}
+]
+},
+
+{
+title:"The Watching Lights",
+text:"Floating lights drift across the battlefield. They blink when stared at.",
+options:[
+{label:"Follow Them",tag:"Curiosity",effect:"Gain 1 Random Potion."},
+{label:"Hide",tag:"Fear",effect:"Presence +1."}
+]
+},
+
+{
+title:"Echoes of Machines",
+text:"Metallic whispers vibrate beneath the stone.",
+options:[
+{label:"Investigate",tag:"Discovery",effect:"Gain 1 Fragment."},
+{label:"Seal the Tunnel",tag:"Containment",effect:"Lose 5 Metal. Breach –1."}
+]
+},
+
+{
+title:"The Crawling Signal",
+text:"A rhythmic pulse spreads through the ground like a heartbeat made of gears.",
+options:[
+{label:"Listen",tag:"Insight",effect:"Harmonic +1."},
+{label:"Interrupt",tag:"Defiance",effect:"Presence +1."}
+]
+},
+
+{
+title:"The Unseen Footsteps",
+text:"Dust moves where no creature walks.",
+options:[
+{label:"Track It",tag:"Hunt",effect:"Spawn Interdimensional Stalker."},
+{label:"Ignore",tag:"Caution",effect:"Gain +5 Gold."}
+]
+},
+
+{
+title:"The Hollow Wind",
+text:"A cold wind blows from nowhere.",
+options:[
+{label:"Endure",tag:"Survival",effect:"All factions lose 5 Food."},
+{label:"Study the Air",tag:"Scholar",effect:"Harmonic +1."}
+]
+},
+
+{
+title:"The Silver Rain",
+text:"Liquid metal drips from the sky before vanishing.",
+options:[
+{label:"Collect It",tag:"Greed",effect:"Gain 5 Metal."},
+{label:"Avoid It",tag:"Caution",effect:"Presence –1."}
+]
+},
+
+{
+title:"The Flicker Gate",
+text:"Reality briefly opens like a door then slams shut.",
+options:[
+{label:"Step Through",tag:"Risk",effect:"Roll 1d6. 4–6 gain 1 Relic. 1–3 lose 1 unit."},
+{label:"Seal It",tag:"Containment",effect:"Lose 5 Metal. Breach –1."}
+]
+},
+
+{
+title:"The Mechanical Choir",
+text:"A distant chorus of machine voices sings beneath the earth.",
+options:[
+{label:"Listen",tag:"Harmony",effect:"Harmonic +2."},
+{label:"Silence It",tag:"Violence",effect:"Presence +1."}
+]
+},
+
+{
+title:"The Crawling Fracture",
+text:"A glowing crack slowly moves across the ground.",
+options:[
+{label:"Contain It",tag:"Control",effect:"Lose 10 Gold. Breach –1."},
+{label:"Let It Grow",tag:"Chaos",effect:"Presence +2."}
+]
+},
+
+{
+title:"The Eye Between Worlds",
+text:"A massive unseen gaze passes across the battlefield.",
+options:[
+{label:"Hide",tag:"Fear",effect:"Lose 5 Gold."},
+{label:"Stare Back",tag:"Defiance",effect:"Presence +2."}
+]
+},
+
+{
+title:"The Broken Sky",
+text:"For a moment the sky splits into countless shards.",
+options:[
+{label:"Watch",tag:"Awe",effect:"Harmonic +1."},
+{label:"Shield the Troops",tag:"Defense",effect:"Lose 5 Food."}
+]
+},
+
+{
+title:"The Crawling Machines",
+text:"Small metal creatures emerge from the fractures.",
+options:[
+{label:"Destroy Them",tag:"War",effect:"Gain +5 Gold."},
+{label:"Capture One",tag:"Study",effect:"Gain 1 Fragment."}
+]
+},
+
+{
+title:"The Breach Pulse",
+text:"A shockwave spreads from the rift.",
+options:[
+{label:"Brace",tag:"Defense",effect:"Lose 5 Food."},
+{label:"Harness It",tag:"Power",effect:"Harmonic +1."}
+]
+},
+
+{
+title:"Reality Static",
+text:"Sound distorts and the air crackles like broken lightning.",
+options:[
+{label:"Wait It Out",tag:"Patience",effect:"No effect."},
+{label:"Channel It",tag:"Risk",effect:"Presence +1."}
+]
+},
+
+{
+title:"The Living Shadow",
+text:"A shadow moves independently from its owner.",
+options:[
+{label:"Confront It",tag:"Courage",effect:"Spawn Shadow Entity."},
+{label:"Ignore It",tag:"Fear",effect:"Presence +1."}
+]
+},
+
+{
+title:"The Fractured Echo",
+text:"Voices repeat things that haven't happened yet.",
+options:[
+{label:"Listen Closely",tag:"Insight",effect:"Harmonic +1."},
+{label:"Block It Out",tag:"Control",effect:"Lose 5 Gold."}
+]
+},
+
+{
+title:"The Silent Surge",
+text:"The breach glows brighter for a moment.",
+options:[
+{label:"Observe",tag:"Scholar",effect:"Gain 1 Fragment."},
+{label:"Attack It",tag:"Violence",effect:"Presence +2."}
+]
+},
+
+{
+title:"The Crawling Stars",
+text:"Tiny lights crawl across the ground like insects.",
+options:[
+{label:"Capture Them",tag:"Curiosity",effect:"Gain 1 Random Potion."},
+{label:"Destroy Them",tag:"Safety",effect:"Lose 5 Metal."}
+]
+},
+
+{
+title:"The Deep Signal",
+text:"A strange signal pulses from beneath the world.",
+options:[
+{label:"Decode",tag:"Study",effect:"Harmonic +1."},
+{label:"Jam It",tag:"Control",effect:"Lose 5 Metal. Breach –1."}
+]
+}
+ ]
+};
+
 /* ================= EVENT SYSTEM ================= */
 
 function drawWorldEvent() {
