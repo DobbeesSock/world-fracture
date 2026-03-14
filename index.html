@@ -169,6 +169,35 @@ button{
 </div>
 </div>
 
+<div class="campaignTrackers">
+
+<h2>Campaign Trackers</h2>
+
+<div class="tracker">
+<h3>⚖ Alignment</h3>
+<button onclick="changeAlignment(-1)">-</button>
+<span id="alignmentValue">0</span>
+<button onclick="changeAlignment(1)">+</button>
+</div>
+
+<div class="tracker">
+<h3>📜 Truth</h3>
+<button onclick="changeTruth(-1)">-</button>
+<span id="truthValue">0</span>
+<button onclick="changeTruth(1)">+</button>
+<p id="truthMessage"></p>
+</div>
+
+<div class="tracker">
+<h3>🌌 Reality Distortion</h3>
+<button onclick="changeDistortion(-1)">-</button>
+<span id="distortionValue">0</span>
+<button onclick="changeDistortion(1)">+</button>
+<p id="distortionEvent"></p>
+</div>
+
+</div>
+
 <script>
 
 /* ================= STATE ================= */
