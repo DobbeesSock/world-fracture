@@ -936,29 +936,59 @@ function resetConvergence(){
 
 function saveCampaign(){
   let slot=document.getElementById("saveSlot").value;
-  localStorage.setItem(slot,JSON.stringify({tension,presence,harmonic,convergence,breach}));
+  localStorage.setItem(slot,JSON.stringify({
+tension,
+presence,
+harmonic,
+convergence,
+breach,
+alignment,
+truth,
+distortion
+}));
   alert("Saved");
 }
 
 function loadCampaign(){
-  let slot=document.getElementById("saveSlot").value;
-  let data=localStorage.getItem(slot);
-  if(!data) return;
-  let s=JSON.parse(data);
-  tension=s.tension||0;
-  presence=s.presence||0;
-  harmonic=s.harmonic||0;
-  convergence=s.convergence||0;
-  breach=s.breach||0;
-  location.reload();
-}
 
+let slot=document.getElementById("saveSlot").value;
+let data=localStorage.getItem(slot);
+
+if(!data) return;
+
+let s=JSON.parse(data);
+
+tension=s.tension||0;
+presence=s.presence||0;
+harmonic=s.harmonic||0;
+convergence=s.convergence||0;
+breach=s.breach||0;
+
+alignment=s.alignment||0;
+truth=s.truth||0;
+distortion=s.distortion||0;
+
+location.reload();
+
+}
 function newCampaign(){
   localStorage.clear();
   location.reload();
 }
 
 let alignment = 0;
+let truth = 0;
+let distortion = 0;
+
+window.onload = function(){
+
+document.getElementById("alignmentValue").innerText = alignment;
+document.getElementById("truthValue").innerText = truth;
+document.getElementById("distortionValue").innerText = distortion;
+
+updateTruth();
+
+};
 
 function changeAlignment(amount){
 
@@ -970,8 +1000,17 @@ if(alignment < -10) alignment = -10;
 document.getElementById("alignmentValue").innerText = alignment;
 
 }
+function changeAlignment(amount){
 
-let truth = 0;
+alignment += amount;
+
+if(alignment > 10) alignment = 10;
+if(alignment < -10) alignment = -10;
+
+document.getElementById("alignmentValue").innerText = alignment;
+
+}
+
 
 function changeTruth(amount){
 
@@ -1000,7 +1039,6 @@ document.getElementById("truthMessage").innerText = msg;
 
 }
 
-let distortion = 0;
 
 function changeDistortion(amount){
 
@@ -1049,6 +1087,7 @@ break;
 case 6:
 event = "Stabilization — remove 1 distortion";
 distortion -= 1;
+document.getElementById("distortionValue").innerText = distortion;
 break;
 
 }
