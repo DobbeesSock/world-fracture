@@ -174,27 +174,33 @@ button{
 <h2>Campaign Trackers</h2>
 
 <div class="tracker">
-<h3>⚖ Alignment</h3>
+<h3>⚖️ Alignment</h3>
+
 <button onclick="changeAlignment(-1)">-</button>
 <span id="alignmentValue">0</span>
 <button onclick="changeAlignment(1)">+</button>
-</div>
+<button onclick="resetAlignment()">Reset</button></div>
 
 <div class="tracker">
 <h3>📜 Truth</h3>
+
 <button onclick="changeTruth(-1)">-</button>
 <span id="truthValue">0</span>
 <button onclick="changeTruth(1)">+</button>
+<button onclick="resetTruth()">Reset</button>
+
 <p id="truthMessage"></p>
 </div>
 
 <div class="tracker">
-<h3>🌌 Reality Distortion</h3>
+<h3>🌀 Reality Distortion</h3>
+
 <button onclick="changeDistortion(-1)">-</button>
 <span id="distortionValue">0</span>
 <button onclick="changeDistortion(1)">+</button>
-<p id="distortionEvent"></p>
-</div>
+<button onclick="resetDistortion()">Reset</button>
+
+<p id="distortionEvent"></p></div>
 
 </div>
 
@@ -931,6 +937,32 @@ function resetConvergence(){
   document.getElementById("convergenceTier").textContent = "Subtle";
 }
 
+function resetAlignment(){
+
+alignment = 0;
+document.getElementById("alignmentValue").innerText = alignment;
+
+}
+
+function resetTruth(){
+
+truth = 0;
+
+document.getElementById("truthValue").innerText = truth;
+document.getElementById("truthMessage").innerText = "";
+
+}
+
+function resetDistortion(){
+
+distortion = 0;
+
+document.getElementById("distortionValue").innerText = distortion;
+
+let eventBox = document.getElementById("distortionEvent");
+if(eventBox) eventBox.innerText = "";
+
+}
 
 /* ================= SAVE ================= */
 
